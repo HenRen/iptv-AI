@@ -11,3 +11,8 @@ next-env.d.ts
 .DS_Store
 npm-debug.log*
 coverage/
+
+# Local build archives
+*.tar.gz
+*.tgz
+*.zip
