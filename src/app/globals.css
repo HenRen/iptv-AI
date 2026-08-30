@@ -1,0 +1,107 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    color-scheme: dark;
+  }
+
+  html,
+  body {
+    height: 100%;
+  }
+
+  body {
+    @apply bg-ground text-ink font-sans antialiased;
+    /* A television interface never scrolls the document itself; panes scroll. */
+    overflow: hidden;
+  }
+
+  /* Focus is the primary affordance on a remote. Never remove it, and never
+     show the mouse-only default ring — every focusable defines its own. */
+  :focus {
+    outline: none;
+  }
+  :focus-visible {
+    outline: none;
+  }
+
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    @apply bg-surface-4 rounded-full;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-accent-dim;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
+
+@layer components {
+  /* The single focus treatment used across the whole app. */
+  .tv-focus {
+    @apply transition-[transform,box-shadow,background-color] duration-200 ease-out;
+  }
+  .tv-focus[data-focused='true'] {
+    @apply shadow-focus;
+  }
+
+  .tv-card {
+    @apply bg-surface-1 rounded-card border border-line overflow-hidden;
+    background-image: linear-gradient(160deg, rgba(255, 255, 255, 0.035), rgba(255, 255, 255, 0));
+  }
+
+  .rail-scroll {
+    scrollbar-width: none;
+  }
+  .rail-scroll::-webkit-scrollbar {
+    display: none;
+  }
+
+  .skeleton {
+    @apply relative overflow-hidden bg-surface-2;
+  }
+  .skeleton::after {
+    content: '';
+    @apply absolute inset-0 animate-shimmer;
+    background-image: linear-gradient(
+      90deg,
+      transparent,
+      rgba(255, 255, 255, 0.055),
+      transparent
+    );
+    transform: translateX(-100%);
+  }
+
+  .hairline {
+    @apply border-line;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+  .no-select {
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  /* Fade a rail's trailing edge so content reads as continuing off-screen. */
+  .fade-right {
+    mask-image: linear-gradient(to right, black 88%, transparent 100%);
+  }
+}
