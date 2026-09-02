@@ -71,12 +71,30 @@ cases.
 
 ### What a TV app has to supply
 
-`StoragePort` (MMKV, AsyncStorage or the platform store), `CryptoPort` and a
-`HttpPort` — the last is about forty lines, and
-`@streamwise/server/http.ts` is the reference. It should install
-`passthroughUrlGuard`: a TV client talks to `@streamwise/server` over HTTP
-and proxies nothing itself, so there is no SSRF surface to guard and
-pretending otherwise would be theatre.
+Much less than the table above suggests — one port, and optionally a second:
+
+```ts
+import { configureCoreClient } from '@streamwise/core';
+
+configureCoreClient({ http, storage });   // storage is optional
+```
+
+A client calls `ApiClient`, so the catalogue, the credential envelope and the
+SSRF guard all run on the server. `HttpPort` is the only port it genuinely
+has (about forty lines — `@streamwise/server/http.ts` is the reference), plus
+`StoragePort` if it keeps anything locally, such as a last channel or a
+favourites list.
+
+`configureCoreClient` binds the rest to stubs that refuse and name
+themselves. That is deliberate rather than lazy: making a TV app supply a
+`CryptoPort` it never calls invites it to write a fake cipher to satisfy the
+type, and a fake cipher nothing calls today is a real vulnerability the day
+something does. The URL guard is the passthrough for the same reason — a
+client proxies nothing, so a real-looking guard would imply a protection that
+does not exist.
+
+Use `configureCore` instead wherever the credential path actually runs. That
+is the server, and only the server.
 
 ## Talking to the server
 

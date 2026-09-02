@@ -7,11 +7,12 @@ export type { UrlGuardPort, UrlGuardOptions } from './urlGuard';
 export { passthroughUrlGuard } from './urlGuard';
 export type { SecureStorePort } from './secureStore';
 export { sealedSecureStore } from './secureStore';
-export type { CoreBindings, CoreConfig, CoreEnvironment } from './runtime';
+export type { ClientBindings, CoreBindings, CoreConfig, CoreEnvironment } from './runtime';
 export {
   DEFAULT_CONFIG,
   config,
   configureCore,
+  configureCoreClient,
   core,
   crypto,
   http,

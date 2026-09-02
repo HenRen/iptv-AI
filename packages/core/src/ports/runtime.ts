@@ -4,6 +4,7 @@ import type { SecureStorePort } from './secureStore';
 import type { StoragePort } from './storage';
 import type { UrlGuardPort } from './urlGuard';
 import { sealedSecureStore } from './secureStore';
+import { passthroughUrlGuard } from './urlGuard';
 
 /**
  * The one place core reaches outside itself.
@@ -62,6 +63,85 @@ export function configureCore(bindings: CoreBindings): CoreEnvironment {
     http: bindings.http,
     urlGuard: bindings.urlGuard,
     secureStore: bindings.secureStore ?? sealedSecureStore(bindings.storage, bindings.crypto),
+    config: { ...DEFAULT_CONFIG, ...bindings.config },
+  };
+  return current;
+}
+
+/**
+ * Bindings for a client — a TV app, or anything else that talks to
+ * `@streamwise/server` over HTTP rather than to a provider directly.
+ *
+ * Such an app needs almost none of this. It calls `ApiClient`, so the
+ * catalogue, the credential envelope and the SSRF guard all run on the
+ * server; the only ports it genuinely has are `http`, and `storage` if it
+ * keeps anything locally (a last channel, a favourites list).
+ *
+ * Making it invent an AES-GCM implementation it will never call would be
+ * ceremony, and worse than ceremony: the obvious way to satisfy the type is
+ * to write a fake one, and a fake CryptoPort that nothing calls today is a
+ * real vulnerability the day something does. So the server-side ports are
+ * bound to stubs that refuse loudly and name themselves.
+ */
+export interface ClientBindings {
+  http: HttpPort;
+  /** Local preferences only. Defaults to a store that refuses. */
+  storage?: StoragePort;
+  config?: Partial<CoreConfig>;
+}
+
+function unavailable(port: string, reason: string): never {
+  throw new Error(
+    `${port} is not available in this build. ${reason} If you meant to use it, configure the ` +
+      'core with configureCore({ ... }) and a real implementation instead of configureCoreClient().',
+  );
+}
+
+// `async` matters: these return promises in the interface, so they must
+// *reject* rather than throw synchronously. A caller writing
+// `store.getJSON(k).catch(...)` would otherwise blow up before it had a
+// promise to catch on.
+const NO_STORAGE = 'This client did not bind local storage.';
+
+const refusingStorage: StoragePort = {
+  getJSON: async () => unavailable('StoragePort', NO_STORAGE),
+  setJSON: async () => unavailable('StoragePort', NO_STORAGE),
+  delete: async () => unavailable('StoragePort', NO_STORAGE),
+  list: async () => unavailable('StoragePort', NO_STORAGE),
+  getBlob: async () => unavailable('StoragePort', NO_STORAGE),
+  setBlob: async () => unavailable('StoragePort', NO_STORAGE),
+  blobStat: async () => unavailable('StoragePort', NO_STORAGE),
+};
+
+const SERVER_SIDE = 'Credentials and playback tokens are the server\'s business, not a client\'s.';
+
+const refusingCrypto: CryptoPort = {
+  seal: () => unavailable('CryptoPort', SERVER_SIDE),
+  open: () => unavailable('CryptoPort', SERVER_SIDE),
+  randomId: () => unavailable('CryptoPort', SERVER_SIDE),
+  signToken: () => unavailable('CryptoPort', SERVER_SIDE),
+  verifyToken: () => unavailable('CryptoPort', SERVER_SIDE),
+};
+
+const refusingSecureStore: SecureStorePort = {
+  read: async () => unavailable('SecureStorePort', SERVER_SIDE),
+  write: async () => unavailable('SecureStorePort', SERVER_SIDE),
+  delete: async () => unavailable('SecureStorePort', SERVER_SIDE),
+};
+
+/**
+ * Install client bindings. The server-side ports are present but refuse, so
+ * calling one is an immediate, named error rather than a silent wrong answer.
+ */
+export function configureCoreClient(bindings: ClientBindings): CoreEnvironment {
+  current = {
+    storage: bindings.storage ?? refusingStorage,
+    crypto: refusingCrypto,
+    http: bindings.http,
+    // A client proxies nothing, so it has no SSRF surface to guard. Claiming
+    // otherwise with a real-looking guard would be theatre.
+    urlGuard: passthroughUrlGuard,
+    secureStore: refusingSecureStore,
     config: { ...DEFAULT_CONFIG, ...bindings.config },
   };
   return current;
