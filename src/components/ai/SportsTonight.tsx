@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Trophy } from 'lucide-react';
 import type { Channel } from '@/types';
 import { aiApi } from '@/lib/api/aiClient';
 import { api } from '@/lib/api/client';
@@ -9,7 +8,7 @@ import { SPORT_LABEL, type SportsEvent } from '@/lib/ai/epg/SportsIntelligence';
 import { usePlayerStore } from '@/stores/playerStore';
 import { useUserStore } from '@/stores/userStore';
 import { useAiStore } from '@/stores/aiStore';
-import { Focusable, LiveBadge, Skeleton } from '@/components/common';
+import { Icon, Focusable, LiveBadge, Skeleton } from '@/components/common';
 import { clockTime, dayLabel } from '@/lib/utils/time';
 
 /**
@@ -86,7 +85,7 @@ export function SportsTonight({ limit = 12 }: { limit?: number }) {
   return (
     <section>
       <header className="mb-3 flex items-center gap-2 px-8">
-        <Trophy className="h-4 w-4 text-accent" aria-hidden />
+        <Icon name="iptv-sports" size={16} className="text-accent" />
         <h2 className="text-[15px] font-semibold tracking-tight text-ink">Sports Tonight</h2>
         <span className="text-xs text-ink-faint">from your TV guide</span>
       </header>
@@ -97,7 +96,7 @@ export function SportsTonight({ limit = 12 }: { limit?: number }) {
             <Focusable
               onClick={() => void watch(event)}
               aria-label={`Watch ${event.title} on ${event.channelName}`}
-              className="flex w-full items-center gap-4 rounded-tile border border-line/60 bg-surface-1 p-3 hover:bg-surface-3"
+              className="flex w-full items-center gap-4 rounded-tile border border-line bg-surface-1 p-3 hover:bg-surface-3"
             >
               <span className="w-24 shrink-0 text-xs tabular-nums text-ink-mute">
                 {dayLabel(event.start)} {clockTime(event.start)}

@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Mic, Send, Sparkles, X } from 'lucide-react';
 import type { Channel } from '@/types';
 import { aiApi } from '@/lib/api/aiClient';
 import { useAiStore } from '@/stores/aiStore';
@@ -10,7 +9,7 @@ import { usePlayerStore } from '@/stores/playerStore';
 import { useUserStore } from '@/stores/userStore';
 import { useVoiceInput } from '@/lib/ai/voice/useVoiceInput';
 import { cn } from '@/lib/utils/cn';
-import { Spinner } from '@/components/common';
+import { Icon, Spinner } from '@/components/common';
 
 /**
  * AI 1 — Ask TV.
@@ -91,7 +90,7 @@ export function AskTV() {
             close();
             break;
           case 'search':
-            router.push(`/search?q=${encodeURIComponent(command.query)}`);
+            router.push(`/ai?q=${encodeURIComponent(command.query)}`);
             setReply({ ok: true, message: res.spoken ?? 'Searching' });
             close();
             break;
@@ -157,16 +156,16 @@ export function AskTV() {
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-xl overflow-hidden rounded-card border border-line bg-surface-1 shadow-lift animate-slide-up"
+        className="w-full max-w-xl overflow-hidden rounded-card border border-line bg-surface-1 shadow-lift animate-zap-in"
       >
         <form
           onSubmit={(e) => {
             e.preventDefault();
             void submit(value);
           }}
-          className="flex items-center gap-3 border-b border-line/70 px-4 py-3"
+          className="flex items-center gap-3 border-b border-line px-4 py-3"
         >
-          <Sparkles className="h-4 w-4 shrink-0 text-accent" aria-hidden />
+          <Icon name="iptv-ai" size={16} className="shrink-0 text-accent" />
           <input
             ref={inputRef}
             data-focusable=""
@@ -190,7 +189,7 @@ export function AskTV() {
                   : 'text-ink-mute hover:bg-surface-3 hover:text-ink',
               )}
             >
-              <Mic className="h-4 w-4" aria-hidden />
+              <Icon name="iptv-mic" size={16} />
             </button>
           ) : null}
           <button
@@ -200,7 +199,7 @@ export function AskTV() {
             disabled={busy || !value.trim()}
             className="tv-focus grid h-8 w-8 place-items-center rounded-full text-ink-mute hover:bg-surface-3 hover:text-ink focus:shadow-focus disabled:opacity-30"
           >
-            <Send className="h-4 w-4" aria-hidden />
+            <Icon name="iptv-send" size={16} />
           </button>
           <button
             type="button"
@@ -209,7 +208,7 @@ export function AskTV() {
             aria-label="Close Ask TV"
             className="tv-focus grid h-8 w-8 place-items-center rounded-full text-ink-faint hover:text-ink focus:shadow-focus"
           >
-            <X className="h-4 w-4" aria-hidden />
+            <Icon name="iptv-close" size={16} />
           </button>
         </form>
 
@@ -278,7 +277,7 @@ export function AskTVButton({ className }: { className?: string }) {
         className,
       )}
     >
-      <Sparkles className="h-3.5 w-3.5 text-accent" aria-hidden />
+      <Icon name="iptv-ai" size={14} className="text-accent" />
       Ask TV
     </button>
   );

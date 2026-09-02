@@ -1,8 +1,7 @@
 'use client';
 
-import { Star } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
-import { Artwork, Focusable, ProgressBar } from '@/components/common';
+import { Icon, Artwork, Focusable, ProgressBar } from '@/components/common';
 
 /**
  * Poster card for movies and series.
@@ -60,7 +59,7 @@ export function ContentCard({
           {year ? <span className="tabular-nums">{year}</span> : null}
           {rating ? (
             <span className="inline-flex items-center gap-0.5 tabular-nums">
-              <Star className="h-2.5 w-2.5 fill-current text-warn" aria-hidden />
+              <Icon name="iptv-star" size={10} className="fill-current text-warn" />
               {rating.toFixed(1)}
             </span>
           ) : null}
@@ -93,7 +92,7 @@ export function ChannelCard({
       className="group w-[210px] shrink-0 data-[focused=true]:scale-[1.03]"
       bare
     >
-      <span className="tv-card block p-3 transition-colors group-data-[focused=true]:border-accent group-data-[focused=true]:bg-surface-2">
+      <span className="sw-card block p-3 transition-colors group-data-[focused=true]:border-accent group-data-[focused=true]:bg-surface-2">
         <span className="flex items-center gap-3">
           <span className="grid h-11 w-14 shrink-0 place-items-center overflow-hidden rounded bg-surface-2">
             <Artwork

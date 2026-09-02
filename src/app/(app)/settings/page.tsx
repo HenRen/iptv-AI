@@ -2,10 +2,9 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { CalendarClock, ChevronRight, ListVideo, ShieldCheck, Sparkles, Wrench } from 'lucide-react';
 import { api } from '@/lib/api/client';
 import { TopBar } from '@/components/navigation/TopBar';
-import { ErrorNotice, Focusable, Spinner } from '@/components/common';
+import { Icon, ErrorNotice, Focusable, Spinner } from '@/components/common';
 import { cn } from '@/lib/utils/cn';
 
 export default function SettingsPage() {
@@ -16,28 +15,28 @@ export default function SettingsPage() {
         <div className="mx-auto max-w-2xl space-y-8 px-6 py-8">
           <section>
             <SectionTitle>General</SectionTitle>
-            <div className="tv-card divide-y divide-line/60">
+            <div className="sw-card divide-y divide-line">
               <LinkRow
                 href="/settings/playlists"
-                icon={<ListVideo className="h-4 w-4" aria-hidden />}
+                icon={<Icon name="iptv-playlists" size={16} />}
                 title="Playlists"
                 description="Connect, refresh, reconnect or remove providers."
               />
               <LinkRow
                 href="/settings/ai"
-                icon={<Sparkles className="h-4 w-4" aria-hidden />}
+                icon={<Icon name="iptv-ai" size={16} />}
                 title="AI & Privacy"
                 description="Ask TV, recommendations, watchlist and playlist health."
               />
               <LinkRow
                 href="/settings/parental"
-                icon={<ShieldCheck className="h-4 w-4" aria-hidden />}
+                icon={<Icon name="iptv-shield-check" size={16} />}
                 title="Parental control"
                 description="PIN, adult-content filter and hidden categories."
               />
               <LinkRow
                 href="/settings/developer"
-                icon={<Wrench className="h-4 w-4" aria-hidden />}
+                icon={<Icon name="iptv-settings" size={16} />}
                 title="Developer · IPTV Diagnostics"
                 description="Playlist health, EPG coverage and connection status."
               />
@@ -95,9 +94,9 @@ function EpgSection() {
   return (
     <section>
       <SectionTitle>TV Guide source</SectionTitle>
-      <div className="tv-card space-y-4 p-5">
+      <div className="sw-card space-y-4 p-5">
         <div className="flex items-start gap-3">
-          <CalendarClock className="mt-0.5 h-4 w-4 shrink-0 text-ink-mute" aria-hidden />
+          <Icon name="iptv-ai-epg" size={16} className="mt-0.5 shrink-0 text-ink-mute" />
           <p className="text-sm leading-relaxed text-ink-mute">
             The provider&rsquo;s own XMLTV feed is used automatically when it exposes one. Override it
             with a custom source if the guide is missing or badly matched.
@@ -125,7 +124,7 @@ function EpgSection() {
             data-focusable=""
             onClick={() => void loadUrl()}
             disabled={busy || !url.trim()}
-            className="tv-focus rounded-tile bg-accent px-4 py-2 text-sm font-medium text-white hover:bg-accent-bright focus:shadow-focus disabled:bg-surface-3 disabled:text-ink-faint"
+            className="tv-focus rounded-tile bg-accent px-4 py-2 text-sm font-semibold text-ground hover:brightness-110 focus:shadow-focus disabled:bg-surface-3 disabled:text-ink-faint"
           >
             {busy ? <Spinner className="h-4 w-4" /> : 'Load'}
           </button>
@@ -177,7 +176,7 @@ function LinkRow({
         <span className="block text-sm font-medium text-ink">{title}</span>
         <span className="mt-0.5 block text-xs text-ink-mute">{description}</span>
       </span>
-      <ChevronRight className="h-4 w-4 shrink-0 text-ink-faint" aria-hidden />
+      <Icon name="iptv-chevron-right" size={16} className="shrink-0 text-ink-faint" />
     </Link>
   );
 }

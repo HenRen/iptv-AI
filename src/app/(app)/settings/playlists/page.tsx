@@ -1,13 +1,12 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Plus, RefreshCw, Trash2 } from 'lucide-react';
 import type { ConnectionStatus, Playlist } from '@/types';
 import { usePlaylistStore } from '@/stores/playlistStore';
 import { api } from '@/lib/api/client';
 import { TopBar } from '@/components/navigation/TopBar';
-import { ConnectFlow } from '@/components/onboarding/ConnectFlow';
-import { EmptyState, ErrorNotice, Focusable, Spinner } from '@/components/common';
+import { SetupFlow } from '@/components/setup/SetupFlow';
+import { Icon, EmptyState, ErrorNotice, Focusable, Spinner } from '@/components/common';
 import { cn } from '@/lib/utils/cn';
 
 const KIND_LABEL: Record<Playlist['kind'], string> = {
@@ -59,7 +58,7 @@ export default function PlaylistsPage() {
       <>
         <TopBar title="Add Playlist" />
         <div className="min-h-0 flex-1 overflow-y-auto">
-          <ConnectFlow mode="add" />
+          <SetupFlow mode="add" />
         </div>
       </>
     );
@@ -76,9 +75,9 @@ export default function PlaylistsPage() {
             </p>
             <Focusable
               onClick={() => setAdding(true)}
-              className="inline-flex items-center gap-2 rounded-tile bg-accent px-4 py-2 text-sm font-medium text-white hover:bg-accent-bright"
+              className="inline-flex items-center gap-2 rounded-tile bg-accent px-4 py-2 text-sm font-semibold text-ground hover:brightness-110"
             >
-              <Plus className="h-4 w-4" aria-hidden />
+              <Icon name="iptv-plus" size={16} />
               Add playlist
             </Focusable>
           </div>
@@ -97,7 +96,7 @@ export default function PlaylistsPage() {
           ) : (
             <ul className="space-y-3">
               {playlists.map((playlist) => (
-                <li key={playlist.id} className="tv-card p-5">
+                <li key={playlist.id} className="sw-card p-5">
                   <div className="flex flex-wrap items-start justify-between gap-4">
                     <div className="min-w-0">
                       <div className="flex items-center gap-2.5">
@@ -147,7 +146,7 @@ export default function PlaylistsPage() {
                         {busyId === playlist.id ? (
                           <Spinner className="h-3.5 w-3.5" />
                         ) : (
-                          <RefreshCw className="h-3.5 w-3.5" aria-hidden />
+                          <Icon name="iptv-refresh" size={14} />
                         )}
                       </Focusable>
                       <Focusable
@@ -159,12 +158,12 @@ export default function PlaylistsPage() {
                         aria-label={`Delete ${playlist.name}`}
                         className="grid h-8 w-8 place-items-center rounded-tile border border-line text-ink-mute hover:border-live/50 hover:text-live"
                       >
-                        <Trash2 className="h-3.5 w-3.5" aria-hidden />
+                        <Icon name="iptv-trash" size={14} />
                       </Focusable>
                     </div>
                   </div>
 
-                  <dl className="mt-4 grid grid-cols-2 gap-3 border-t border-line/60 pt-4 sm:grid-cols-5">
+                  <dl className="mt-4 grid grid-cols-2 gap-3 border-t border-line pt-4 sm:grid-cols-5">
                     <Stat label="Channels" value={playlist.stats.channels} />
                     <Stat label="Movies" value={playlist.stats.movies} />
                     <Stat label="Series" value={playlist.stats.series} />

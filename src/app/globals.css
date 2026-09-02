@@ -13,16 +13,12 @@
   }
 
   body {
-    @apply bg-ground text-ink font-sans antialiased;
-    /* A television interface never scrolls the document itself; panes scroll. */
+    @apply bg-ground-deep text-ink font-sans antialiased;
+    /* A television interface never scrolls the document; panes scroll. */
     overflow: hidden;
   }
 
-  /* Focus is the primary affordance on a remote. Never remove it, and never
-     show the mouse-only default ring — every focusable defines its own. */
-  :focus {
-    outline: none;
-  }
+  :focus,
   :focus-visible {
     outline: none;
   }
@@ -35,10 +31,11 @@
     background: transparent;
   }
   ::-webkit-scrollbar-thumb {
-    @apply bg-surface-4 rounded-full;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 999px;
   }
   ::-webkit-scrollbar-thumb:hover {
-    @apply bg-accent-dim;
+    background: rgba(91, 140, 255, 0.45);
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -52,17 +49,45 @@
 }
 
 @layer components {
-  /* The single focus treatment used across the whole app. */
+  /**
+   * The single focus treatment.
+   *
+   * White ring + slight lift, never colour alone — PROTOTYPE.md is explicit
+   * that focus must be readable from across a room, and hue shifts are the
+   * first thing to disappear at that distance.
+   */
   .tv-focus {
-    @apply transition-[transform,box-shadow,background-color] duration-200 ease-out;
+    @apply transition-[transform,box-shadow,background-color,border-color] duration-focus ease-out;
   }
   .tv-focus[data-focused='true'] {
     @apply shadow-focus;
   }
+  .tv-focus[data-focused='true'].tv-lift {
+    transform: scale(1.03);
+  }
+  .tv-focus[data-focused='true'].tv-lift-lg {
+    transform: scale(1.06);
+  }
 
-  .tv-card {
-    @apply bg-surface-1 rounded-card border border-line overflow-hidden;
-    background-image: linear-gradient(160deg, rgba(255, 255, 255, 0.035), rgba(255, 255, 255, 0));
+  .sw-card {
+    @apply rounded-card border border-line;
+    background-image: linear-gradient(180deg, #111a31, #0d1424);
+  }
+
+  .sw-panel {
+    @apply rounded-panel border border-line bg-surface-3;
+  }
+
+  /* Uppercase tracked section label — used everywhere headings appear. */
+  .sw-kicker {
+    @apply text-[13px] font-semibold uppercase tracking-kicker text-ink-mute;
+  }
+  .sw-label {
+    @apply text-[15px] font-semibold uppercase tracking-label;
+  }
+
+  .sw-pill {
+    @apply rounded-pill px-4 py-2 text-[13px] font-semibold uppercase tracking-label;
   }
 
   .rail-scroll {
@@ -78,17 +103,8 @@
   .skeleton::after {
     content: '';
     @apply absolute inset-0 animate-shimmer;
-    background-image: linear-gradient(
-      90deg,
-      transparent,
-      rgba(255, 255, 255, 0.055),
-      transparent
-    );
+    background-image: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.055), transparent);
     transform: translateX(-100%);
-  }
-
-  .hairline {
-    @apply border-line;
   }
 }
 
@@ -100,8 +116,8 @@
     user-select: none;
     -webkit-user-select: none;
   }
-  /* Fade a rail's trailing edge so content reads as continuing off-screen. */
-  .fade-right {
-    mask-image: linear-gradient(to right, black 88%, transparent 100%);
+  /* The app ground: a slow vertical wash rather than a flat fill. */
+  .sw-ground {
+    background: linear-gradient(180deg, #0a0f1e 0%, #0c1226 55%, #0a0f1e 100%);
   }
 }

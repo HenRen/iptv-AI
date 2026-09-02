@@ -53,8 +53,8 @@ export function ChannelBanner({ visible = true }: { visible?: boolean }) {
     <div
       className={cn(
         'pointer-events-none absolute left-6 top-6 z-10 flex items-center gap-4 rounded-card',
-        'border border-line/70 bg-ground-deep/85 px-5 py-4 shadow-lift backdrop-blur-md',
-        'animate-slide-up',
+        'border border-line bg-ground-deep/85 px-5 py-4 shadow-lift backdrop-blur-md',
+        'animate-zap-in',
       )}
       role="status"
       aria-live="polite"

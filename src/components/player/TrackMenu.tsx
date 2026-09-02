@@ -1,7 +1,7 @@
 'use client';
 
+import { Icon } from '@/components/icons';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Check, Languages, Settings2, Subtitles } from 'lucide-react';
 import {
   EMPTY_TRACKS,
   readTracks,
@@ -74,7 +74,7 @@ export function TrackMenus({ compact }: { compact?: boolean }) {
       {hasAudio ? (
         <MenuButton
           label="Audio track"
-          icon={<Languages className={compact ? 'h-3.5 w-3.5' : 'h-4 w-4'} aria-hidden />}
+          icon={<Icon name="iptv-audio" size={16} />}
           open={openMenu === 'audio'}
           onToggle={() => setOpenMenu(openMenu === 'audio' ? null : 'audio')}
           options={tracks.audio}
@@ -86,7 +86,7 @@ export function TrackMenus({ compact }: { compact?: boolean }) {
       {hasSubtitles ? (
         <MenuButton
           label="Subtitles"
-          icon={<Subtitles className={compact ? 'h-3.5 w-3.5' : 'h-4 w-4'} aria-hidden />}
+          icon={<Icon name="iptv-subtitles" size={16} />}
           open={openMenu === 'subtitles'}
           onToggle={() => setOpenMenu(openMenu === 'subtitles' ? null : 'subtitles')}
           options={[
@@ -102,7 +102,7 @@ export function TrackMenus({ compact }: { compact?: boolean }) {
       {hasQuality ? (
         <MenuButton
           label="Quality"
-          icon={<Settings2 className={compact ? 'h-3.5 w-3.5' : 'h-4 w-4'} aria-hidden />}
+          icon={<Icon name="iptv-quality" size={16} />}
           open={openMenu === 'quality'}
           onToggle={() => setOpenMenu(openMenu === 'quality' ? null : 'quality')}
           options={tracks.quality}
@@ -174,7 +174,7 @@ function MenuButton({
               )}
             >
               <span className="truncate">{option.label}</span>
-              {option.active ? <Check className="h-3.5 w-3.5 shrink-0" aria-hidden /> : null}
+              {option.active ? <Icon name="iptv-check" size={14} className="shrink-0" /> : null}
             </button>
           ))}
         </div>

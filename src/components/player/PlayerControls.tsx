@@ -1,21 +1,10 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import {
-  ChevronDown,
-  ChevronUp,
-  Maximize2,
-  Minimize2,
-  Pause,
-  PictureInPicture2,
-  Play,
-  Volume2,
-  VolumeX,
-} from 'lucide-react';
 import { usePlayerStore } from '@/stores/playerStore';
 import { cn } from '@/lib/utils/cn';
 import { formatDuration } from '@/lib/utils/time';
-import { LiveBadge } from '@/components/common';
+import { Icon, LiveBadge } from '@/components/common';
 import { TrackMenus } from './TrackMenu';
 
 /**
@@ -147,10 +136,10 @@ export function PlayerControls({
             {isLive ? (
               <>
                 <ControlButton label="Previous channel" onClick={() => void zap(-1)}>
-                  <ChevronDown className="h-4 w-4" aria-hidden />
+                  <Icon name="iptv-ch-down" size={16} />
                 </ControlButton>
                 <ControlButton label="Next channel" onClick={() => void zap(1)}>
-                  <ChevronUp className="h-4 w-4" aria-hidden />
+                  <Icon name="iptv-ch-up" size={16} />
                 </ControlButton>
               </>
             ) : null}
@@ -160,18 +149,18 @@ export function PlayerControls({
               onClick={() => setPlaying(!playing)}
               primary
             >
-              {playing ? <Pause className="h-5 w-5" aria-hidden /> : <Play className="h-5 w-5" aria-hidden />}
+              {playing ? <Icon name="iptv-pause" size={20} /> : <Icon name="iptv-play" size={20} />}
             </ControlButton>
 
             <ControlButton label={muted ? 'Unmute' : 'Mute'} onClick={toggleMute}>
-              {muted ? <VolumeX className="h-4 w-4" aria-hidden /> : <Volume2 className="h-4 w-4" aria-hidden />}
+              {muted ? <Icon name="iptv-mute" size={16} /> : <Icon name="iptv-volume" size={16} />}
             </ControlButton>
 
             <TrackMenus compact={compact} />
 
             {pipAvailable ? (
               <ControlButton label="Picture in picture" onClick={() => void togglePip()}>
-                <PictureInPicture2 className="h-4 w-4" aria-hidden />
+                <Icon name="iptv-pip" size={16} />
               </ControlButton>
             ) : null}
 
@@ -180,9 +169,9 @@ export function PlayerControls({
               onClick={() => setMode(mode === 'fullscreen' ? 'inline' : 'fullscreen')}
             >
               {mode === 'fullscreen' ? (
-                <Minimize2 className="h-4 w-4" aria-hidden />
+                <Icon name="iptv-exit-fs" size={16} />
               ) : (
-                <Maximize2 className="h-4 w-4" aria-hidden />
+                <Icon name="iptv-fullscreen" size={16} />
               )}
             </ControlButton>
           </div>

@@ -69,7 +69,7 @@ export function CategoryRail({
         />
 
         {categories.length > 0 ? (
-          <li aria-hidden className="my-2 border-t border-line/60" />
+          <li aria-hidden className="my-2 border-t border-line" />
         ) : null}
 
         {categories.map((category) => (

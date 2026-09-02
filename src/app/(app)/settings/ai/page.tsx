@@ -1,13 +1,12 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import { Activity, Layers, ShieldCheck, Sparkles, Trash2 } from 'lucide-react';
 import { aiApi } from '@/lib/api/aiClient';
 import type { PlaylistHealth } from '@/lib/ai/diagnostics/PlaylistHealthService';
 import { parseWatchRule } from '@/lib/ai/assistant/WatchlistService';
 import { useAiStore, type AiPreferences } from '@/stores/aiStore';
 import { TopBar } from '@/components/navigation/TopBar';
-import { ErrorNotice, Focusable, ProgressBar, Spinner } from '@/components/common';
+import { Icon, ErrorNotice, Focusable, ProgressBar, Spinner } from '@/components/common';
 import { cn } from '@/lib/utils/cn';
 
 type Health = PlaylistHealth & { cleanView: { before: number; after: number; collapsed: number } };
@@ -95,13 +94,13 @@ export default function AiSettingsPage() {
         <div className="mx-auto max-w-2xl space-y-8 px-6 py-8">
           <section>
             <p className="mb-4 flex items-start gap-2 text-xs leading-relaxed text-ink-mute">
-              <ShieldCheck className="mt-0.5 h-3.5 w-3.5 shrink-0 text-ok" aria-hidden />
+              <Icon name="iptv-shield-check" size={14} className="mt-0.5 shrink-0 text-ok" />
               Your IPTV username, password and any URL containing them are never sent to an AI
               provider. Only channel names and catalogue titles can be, and only for the two options
               marked below.
             </p>
 
-            <div className="tv-card divide-y divide-line/60">
+            <div className="sw-card divide-y divide-line">
               {TOGGLES.map((toggle) => (
                 <Toggle
                   key={toggle.key}
@@ -118,7 +117,7 @@ export default function AiSettingsPage() {
 
           <section>
             <SectionTitle>Watchlist</SectionTitle>
-            <div className="tv-card space-y-3 p-5">
+            <div className="sw-card space-y-3 p-5">
               <p className="text-xs leading-relaxed text-ink-mute">
                 Describe what to keep an eye on. Rules are matched against your real TV guide and
                 catalogue — nothing is invented, and a rule with no matches simply shows nothing.
@@ -146,7 +145,7 @@ export default function AiSettingsPage() {
                   type="submit"
                   data-focusable=""
                   disabled={!ruleText.trim()}
-                  className="tv-focus rounded-tile bg-accent px-4 py-2 text-sm font-medium text-white hover:bg-accent-bright focus:shadow-focus disabled:bg-surface-3 disabled:text-ink-faint"
+                  className="tv-focus rounded-tile bg-accent px-4 py-2 text-sm font-semibold text-ground hover:brightness-110 focus:shadow-focus disabled:bg-surface-3 disabled:text-ink-faint"
                 >
                   Add
                 </button>
@@ -157,7 +156,7 @@ export default function AiSettingsPage() {
                   {watchlist.map((rule) => (
                     <li
                       key={rule.id}
-                      className="flex items-center gap-3 rounded-tile border border-line/60 bg-surface-2/50 px-3 py-2"
+                      className="flex items-center gap-3 rounded-tile border border-line bg-surface-2/50 px-3 py-2"
                     >
                       <button
                         type="button"
@@ -188,7 +187,7 @@ export default function AiSettingsPage() {
                         aria-label={`Remove ${rule.label}`}
                         className="grid h-7 w-7 shrink-0 place-items-center rounded-tile text-ink-faint hover:text-live"
                       >
-                        <Trash2 className="h-3.5 w-3.5" aria-hidden />
+                        <Icon name="iptv-trash" size={14} />
                       </Focusable>
                     </li>
                   ))}
@@ -206,7 +205,7 @@ export default function AiSettingsPage() {
                 onClick={() => void runHealth()}
                 className="inline-flex items-center gap-2 rounded-tile border border-line px-3 py-1.5 text-xs text-ink-soft hover:text-ink"
               >
-                <Activity className="h-3.5 w-3.5" aria-hidden />
+                <Icon name="iptv-health" size={14} />
                 Analyze
               </Focusable>
             </div>
@@ -214,12 +213,12 @@ export default function AiSettingsPage() {
             {error ? <ErrorNotice message={error} /> : null}
 
             {loading ? (
-              <div className="tv-card grid h-32 place-items-center">
+              <div className="sw-card grid h-32 place-items-center">
                 <Spinner />
               </div>
             ) : health ? (
               <div className="space-y-3">
-                <div className="tv-card p-5">
+                <div className="sw-card p-5">
                   <div className="mb-4">
                     <div className="mb-1.5 flex items-baseline justify-between text-xs">
                       <span className="text-ink-mute">Healthy metadata</span>
@@ -240,8 +239,8 @@ export default function AiSettingsPage() {
                     <Metric label="Duplicates" value={health.metrics.possibleDuplicates} />
                   </dl>
 
-                  <div className="mt-5 flex items-start gap-2 rounded-tile border border-line/60 bg-surface-2/50 p-3">
-                    <Layers className="mt-0.5 h-3.5 w-3.5 shrink-0 text-accent" aria-hidden />
+                  <div className="mt-5 flex items-start gap-2 rounded-tile border border-line bg-surface-2/50 p-3">
+                    <Icon name="iptv-categories" size={14} className="mt-0.5 shrink-0 text-accent" />
                     <p className="text-xs leading-relaxed text-ink-mute">
                       <span className="font-medium text-ink">Clean view</span> would show{' '}
                       <span className="tabular-nums text-ink">{health.cleanView.after.toLocaleString()}</span>{' '}
@@ -254,7 +253,7 @@ export default function AiSettingsPage() {
                 </div>
 
                 {health.issues.map((issue) => (
-                  <div key={issue.id} className="tv-card p-4">
+                  <div key={issue.id} className="sw-card p-4">
                     <div className="flex items-start gap-3">
                       <span
                         className={cn(
@@ -281,20 +280,20 @@ export default function AiSettingsPage() {
                 ))}
 
                 {health.issues.length === 0 ? (
-                  <p className="tv-card p-5 text-sm text-ink-mute">
+                  <p className="sw-card p-5 text-sm text-ink-mute">
                     No issues found in this playlist.
                   </p>
                 ) : null}
               </div>
             ) : (
-              <p className="tv-card p-5 text-sm text-ink-faint">
+              <p className="sw-card p-5 text-sm text-ink-faint">
                 Run an analysis to see playlist health.
               </p>
             )}
           </section>
 
           <p className="flex items-start gap-2 pb-4 text-[11px] leading-relaxed text-ink-faint">
-            <Sparkles className="mt-0.5 h-3 w-3 shrink-0" aria-hidden />
+            <Icon name="iptv-ai" size={12} className="mt-0.5 shrink-0" />
             AI may organize, classify, recommend, search, summarize, match, explain and diagnose. It
             may not invent a channel, movie, series, programme, sporting event or stream. Everything
             playable resolves to a real entry in your playlist.

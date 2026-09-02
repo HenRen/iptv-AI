@@ -1,23 +1,35 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { MobileNav, Sidebar } from '@/components/navigation/Sidebar';
 import { PlayerHost } from '@/components/player/PlayerHost';
 import { AskTV } from '@/components/ai/AskTV';
+import { QuickActions } from '@/components/overlays/QuickActions';
+import { ErrorDialog } from '@/components/overlays/ErrorDialog';
 import { usePlaylistStore } from '@/stores/playlistStore';
 import { usePlayerStore } from '@/stores/playerStore';
 import { useUserStore } from '@/stores/userStore';
 import { useAiStore } from '@/stores/aiStore';
+import { useUiStore } from '@/stores/uiStore';
 import { useSpatialNavigation } from '@/hooks/useSpatialNavigation';
 import { api } from '@/lib/api/client';
+import { COLOR_KEY_ACTIONS, KEY_LETTER } from '@/lib/ui/colorKeys';
 
 /**
  * Application shell.
  *
- * Owns the three things that must outlive any single screen: the playlist
- * connection, the video element, and the global remote-control key handling.
+ * Owns the four things that must outlive any single screen: the playlist
+ * connection, the video element, the overlays (Ask TV, Quick Actions, errors)
+ * and all remote-control key handling.
+ *
+ * Long-press OK is handled here rather than per-screen: the 600ms hold is a
+ * global gesture, and the screen only decides *what* the target is by putting
+ * `data-qa-*` attributes on the focused element.
  */
+
+const LONG_PRESS_MS = 600;
+
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
@@ -35,12 +47,17 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const playChannel = usePlayerStore((s) => s.playChannel);
 
   const previousChannelId = useUserStore((s) => s.previousChannelId);
+  const toggleAssistant = useAiStore((s) => s.toggleAssistant);
+  const openAssistant = useAiStore((s) => s.openAssistant);
 
-  /**
-   * How many in-app navigations deep we are. Escape/Back must never walk the
-   * user out of the application into whatever page preceded it, which is what
-   * a bare router.back() does when the app was opened directly on a route.
-   */
+  const colorKeys = useUiStore((s) => s.colorKeys);
+  const quickAction = useUiStore((s) => s.quickAction);
+  const errorDialog = useUiStore((s) => s.errorDialog);
+  const openQuickAction = useUiStore((s) => s.openQuickAction);
+  const closeQuickAction = useUiStore((s) => s.closeQuickAction);
+  const dismissError = useUiStore((s) => s.dismissError);
+
+  /** In-app navigation depth — Back must never walk out of the application. */
   const depth = useRef(0);
   const lastPath = useRef(pathname);
   useEffect(() => {
@@ -49,42 +66,133 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       lastPath.current = pathname;
     }
   }, [pathname]);
-  const toggleAssistant = useAiStore((s) => s.toggleAssistant);
 
   useEffect(() => {
     void load();
   }, [load]);
 
-  // Ask TV opens on a single key, the way a voice button on a remote would.
   useEffect(() => {
-    const onKey = (event: KeyboardEvent) => {
-      const target = event.target as HTMLElement | null;
-      const typing =
-        target instanceof HTMLInputElement ||
-        target instanceof HTMLTextAreaElement ||
-        target?.isContentEditable === true;
-      if (typing) return;
+    if (loaded && playlists.length === 0) router.replace('/welcome');
+  }, [loaded, playlists.length, router]);
+
+  /* ---------------- long-press OK → Quick Actions ---------------- */
+
+  const holdTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const didLongPress = useRef(false);
+
+  const readQuickTarget = useCallback(() => {
+    const el = document.activeElement as HTMLElement | null;
+    const host = el?.closest<HTMLElement>('[data-qa-kind]');
+    if (!host) return null;
+    const data = host.dataset;
+    if (data.qaKind === 'channel') {
+      return {
+        kind: 'channel' as const,
+        id: data.qaId ?? '',
+        title: data.qaTitle ?? '',
+        subtitle: data.qaSubtitle ?? null,
+        logo: data.qaLogo ?? null,
+        number: data.qaNumber ? Number(data.qaNumber) : undefined,
+      };
+    }
+    if (data.qaKind === 'program') {
+      return {
+        kind: 'program' as const,
+        id: data.qaId ?? '',
+        title: data.qaTitle ?? '',
+        subtitle: data.qaSubtitle ?? null,
+        channelId: data.qaChannel ?? '',
+        start: data.qaStart ? Number(data.qaStart) : undefined,
+        stop: data.qaStop ? Number(data.qaStop) : undefined,
+      };
+    }
+    return null;
+  }, []);
+
+  useEffect(() => {
+    const isTyping = (target: EventTarget | null) => {
+      const el = target as HTMLElement | null;
+      return (
+        el instanceof HTMLInputElement ||
+        el instanceof HTMLTextAreaElement ||
+        el?.isContentEditable === true
+      );
+    };
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (isTyping(event.target)) return;
+
+      // OK held → Quick Actions.
+      if (event.key === 'Enter' && !event.repeat) {
+        didLongPress.current = false;
+        if (holdTimer.current) clearTimeout(holdTimer.current);
+        holdTimer.current = setTimeout(() => {
+          const target = readQuickTarget();
+          if (target) {
+            didLongPress.current = true;
+            openQuickAction(target);
+          }
+        }, LONG_PRESS_MS);
+        return;
+      }
+
+      // Colour keys.
+      const color = KEY_LETTER[event.key.toLowerCase()];
+      if (color && !event.metaKey && !event.ctrlKey && !event.altKey) {
+        event.preventDefault();
+        const action = COLOR_KEY_ACTIONS[colorKeys[color]];
+        if (action.href) router.push(action.href);
+        else openAssistant();
+        return;
+      }
+
+      // Ask TV.
       if (event.key === '/' || (event.key.toLowerCase() === 'k' && (event.metaKey || event.ctrlKey))) {
         event.preventDefault();
         toggleAssistant();
       }
     };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [toggleAssistant]);
 
-  // No playlist configured yet — the app has nothing to show.
-  useEffect(() => {
-    if (loaded && playlists.length === 0) router.replace('/welcome');
-  }, [loaded, playlists.length, router]);
+    const onKeyUp = (event: KeyboardEvent) => {
+      if (event.key !== 'Enter') return;
+      if (holdTimer.current) {
+        clearTimeout(holdTimer.current);
+        holdTimer.current = null;
+      }
+      // A completed long-press must not also fire the short-press click.
+      if (didLongPress.current) {
+        event.preventDefault();
+        event.stopPropagation();
+        didLongPress.current = false;
+      }
+    };
+
+    window.addEventListener('keydown', onKeyDown);
+    window.addEventListener('keyup', onKeyUp, true);
+    return () => {
+      window.removeEventListener('keydown', onKeyDown);
+      window.removeEventListener('keyup', onKeyUp, true);
+      if (holdTimer.current) clearTimeout(holdTimer.current);
+    };
+  }, [colorKeys, openAssistant, openQuickAction, readQuickTarget, router, toggleAssistant]);
+
+  /* ---------------- spatial navigation and Back ---------------- */
 
   useSpatialNavigation({
     onChannelUp: () => void zap(1),
     onChannelDown: () => void zap(-1),
     onPlayPause: () => setPlaying(!playing),
     onBack: () => {
-      // Fullscreen collapses first; then BACK on Live TV means "last channel",
-      // which is the behaviour every set-top box has trained people to expect.
+      // Order per INTEGRATION.md §4: error → quick action → fullscreen →
+      // last channel → history → home.
+      if (errorDialog) {
+        dismissError();
+        return;
+      }
+      if (quickAction) {
+        closeQuickAction();
+        return;
+      }
       if (mode === 'fullscreen') {
         setMode('inline');
         return;
@@ -97,28 +205,27 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             .then((page) => page.items[0] && playChannel(page.items[0]));
           return;
         }
-        // Watching Live TV with no previous channel: Back has nothing to undo
-        // here, and must not interrupt playback or leave the app.
+        // Nothing to undo, and Back must not interrupt playback.
         return;
       }
-
       if (depth.current > 0) {
         depth.current -= 1;
         router.back();
         return;
       }
-      // Nowhere to go back to inside the app — Home is the floor.
       if (pathname !== '/home') router.push('/home');
     },
   });
 
   return (
-    <div className="flex h-dvh w-full overflow-hidden">
+    <div className="sw-ground flex h-dvh w-full overflow-hidden">
       <Sidebar />
       <div className="flex min-w-0 flex-1 flex-col pb-[58px] md:pb-0">{children}</div>
       <MobileNav />
       <PlayerHost />
       <AskTV />
+      <QuickActions />
+      <ErrorDialog />
     </div>
   );
 }

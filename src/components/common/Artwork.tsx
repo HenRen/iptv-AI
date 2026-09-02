@@ -1,8 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { Clapperboard, Radio, Tv } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
+import { Icon, type IconName } from '@/components/icons';
 
 /**
  * Provider artwork with a designed fallback.
@@ -10,16 +10,26 @@ import { cn } from '@/lib/utils/cn';
  * Logos and posters from IPTV providers are missing, broken or plain HTTP
  * often enough that the fallback is the common case, not the edge case — so
  * it is a deliberate piece of design rather than a grey box, and it always
- * occupies exactly the same space as a loaded image would.
+ * occupies exactly the same space a loaded image would.
+ *
+ * The fallback gradient is derived from the title, so a wall of them looks
+ * composed rather than random, and stays inside the cobalt/navy palette.
  */
 
 interface ArtworkProps {
   src: string | null | undefined;
   alt: string;
-  kind?: 'channel' | 'movie' | 'series';
+  kind?: 'channel' | 'movie' | 'series' | 'sport';
   className?: string;
   imgClassName?: string;
 }
+
+const FALLBACK_ICON: Record<NonNullable<ArtworkProps['kind']>, IconName> = {
+  channel: 'iptv-live',
+  movie: 'iptv-movies',
+  series: 'iptv-series',
+  sport: 'iptv-sports',
+};
 
 function initials(name: string): string {
   const words = name
@@ -31,12 +41,11 @@ function initials(name: string): string {
   return (words[0][0] + words[1][0]).toUpperCase();
 }
 
-/** Stable hue per title so a wall of fallbacks still looks composed. */
+/** Stable hue per title, biased to the blue half so it stays on-palette. */
 function hueOf(name: string): number {
   let h = 0;
   for (let i = 0; i < name.length; i++) h = (h * 31 + name.charCodeAt(i)) % 360;
-  // Bias toward the blue half of the wheel to stay inside the palette.
-  return 190 + (h % 80);
+  return 205 + (h % 55);
 }
 
 export function Artwork({ src, alt, kind = 'channel', className, imgClassName }: ArtworkProps) {
@@ -45,25 +54,21 @@ export function Artwork({ src, alt, kind = 'channel', className, imgClassName }:
 
   if (showFallback) {
     const hue = hueOf(alt);
-    const Icon = kind === 'channel' ? Tv : kind === 'series' ? Radio : Clapperboard;
     return (
       <div
-        className={cn(
-          'flex items-center justify-center overflow-hidden bg-surface-2 text-ink-soft',
-          className,
-        )}
+        className={cn('flex items-center justify-center overflow-hidden text-ink-soft', className)}
         style={{
-          backgroundImage: `linear-gradient(150deg, hsl(${hue} 42% 18%), hsl(${hue + 18} 38% 11%))`,
+          backgroundImage: `linear-gradient(155deg, hsl(${hue} 46% 17%), hsl(${hue + 14} 40% 10%))`,
         }}
         aria-label={alt}
       >
         {kind === 'channel' ? (
           <span className="flex flex-col items-center gap-1">
-            <span className="text-[0.95em] font-semibold tracking-wide">{initials(alt)}</span>
-            <Icon className="h-3 w-3 opacity-45" aria-hidden />
+            <span className="text-[0.95em] font-bold tracking-wide">{initials(alt)}</span>
+            <Icon name={FALLBACK_ICON[kind]} size={12} className="opacity-40" />
           </span>
         ) : (
-          <Icon className="h-1/4 w-1/4 opacity-35" aria-hidden />
+          <Icon name={FALLBACK_ICON[kind]} size={28} className="opacity-30" />
         )}
       </div>
     );

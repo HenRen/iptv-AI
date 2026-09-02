@@ -1,6 +1,6 @@
 'use client';
 
-import { ChevronDown, ChevronUp, Maximize2, Pause, Play, Volume2, VolumeX, X } from 'lucide-react';
+import { Icon } from '@/components/icons';
 import { usePlayerStore } from '@/stores/playerStore';
 
 /**
@@ -32,29 +32,29 @@ export function MiniPlayerChrome({ onExpand }: { onExpand: () => void }) {
           ) : null}
         </div>
         <MiniButton label="Close player" onClick={stop}>
-          <X className="h-3.5 w-3.5" aria-hidden />
+          <Icon name="iptv-close" size={14} />
         </MiniButton>
       </div>
 
       <div className="flex items-center justify-center gap-1 p-2">
         {isLive ? (
           <MiniButton label="Previous channel" onClick={() => void zap(-1)}>
-            <ChevronDown className="h-3.5 w-3.5" aria-hidden />
+            <Icon name="iptv-ch-down" size={14} />
           </MiniButton>
         ) : null}
         <MiniButton label={playing ? 'Pause' : 'Play'} onClick={() => setPlaying(!playing)}>
-          {playing ? <Pause className="h-4 w-4" aria-hidden /> : <Play className="h-4 w-4" aria-hidden />}
+          {playing ? <Icon name="iptv-pause" size={16} /> : <Icon name="iptv-play" size={16} />}
         </MiniButton>
         {isLive ? (
           <MiniButton label="Next channel" onClick={() => void zap(1)}>
-            <ChevronUp className="h-3.5 w-3.5" aria-hidden />
+            <Icon name="iptv-ch-up" size={14} />
           </MiniButton>
         ) : null}
         <MiniButton label={muted ? 'Unmute' : 'Mute'} onClick={toggleMute}>
-          {muted ? <VolumeX className="h-3.5 w-3.5" aria-hidden /> : <Volume2 className="h-3.5 w-3.5" aria-hidden />}
+          {muted ? <Icon name="iptv-mute" size={14} /> : <Icon name="iptv-volume" size={14} />}
         </MiniButton>
         <MiniButton label="Fullscreen" onClick={onExpand}>
-          <Maximize2 className="h-3.5 w-3.5" aria-hidden />
+          <Icon name="iptv-fullscreen" size={14} />
         </MiniButton>
       </div>
     </div>

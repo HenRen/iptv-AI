@@ -170,7 +170,7 @@ export function GuideGrid({
               {slots.map((slot) => (
                 <div
                   key={slot}
-                  className="shrink-0 border-l border-line/60 px-2 py-2 text-xs tabular-nums text-ink-mute"
+                  className="shrink-0 border-l border-line px-2 py-2 text-xs tabular-nums text-ink-mute"
                   style={{ width: (SLOT_MS / MINUTE) * PIXELS_PER_MINUTE }}
                 >
                   {clockTime(slot)}
@@ -228,7 +228,7 @@ function GuideToolbar({
   canGoBack: boolean;
 }) {
   return (
-    <div className="flex items-center gap-2 border-b border-line/70 px-4 py-2.5">
+    <div className="flex items-center gap-2 border-b border-line px-4 py-2.5">
       <span className="mr-2 text-xs text-ink-mute">
         {new Date(origin).toLocaleDateString(undefined, {
           weekday: 'long',
@@ -268,7 +268,7 @@ function ToolbarButton({
       className={cn(
         'tv-focus rounded-tile px-3 py-1.5 text-xs font-medium focus:shadow-focus disabled:opacity-35',
         primary
-          ? 'bg-accent text-white hover:bg-accent-bright'
+          ? 'bg-accent text-white hover:brightness-110'
           : 'border border-line text-ink-mute hover:text-ink',
       )}
     >
@@ -297,7 +297,7 @@ function GuideRow({
   onSelectProgram: (program: EPGProgram) => void;
 }) {
   return (
-    <div className="flex border-b border-line/40" style={{ height: ROW_HEIGHT }}>
+    <div className="flex border-b border-line" style={{ height: ROW_HEIGHT }}>
       <button
         type="button"
         data-focusable=""
@@ -325,7 +325,7 @@ function GuideRow({
         {programs === undefined ? (
           <div className="absolute inset-1 skeleton rounded" />
         ) : programs.length === 0 ? (
-          <div className="absolute inset-y-1 left-1 right-1 rounded border border-line/40 bg-surface-1/40 px-3 py-2 text-xs text-ink-faint">
+          <div className="absolute inset-y-1 left-1 right-1 rounded border border-line bg-surface-1/40 px-3 py-2 text-xs text-ink-faint">
             No guide information
           </div>
         ) : (
@@ -343,11 +343,18 @@ function GuideRow({
                 data-focusable=""
                 onClick={() => (isNow ? onPlay() : onSelectProgram(program))}
                 title={`${program.title}\n${timeRange(program.start, program.stop)}`}
+                data-qa-kind="program"
+                data-qa-id={program.id}
+                data-qa-title={program.title}
+                data-qa-subtitle={channel.name}
+                data-qa-channel={channel.id}
+                data-qa-start={program.start}
+                data-qa-stop={program.stop}
                 className={cn(
                   'absolute inset-y-1 overflow-hidden rounded border px-2.5 py-1.5 text-left transition-colors focus:shadow-focus',
                   isNow
                     ? 'border-accent/60 bg-accent/15 hover:bg-accent/25'
-                    : 'border-line/60 bg-surface-1 hover:bg-surface-3',
+                    : 'border-line bg-surface-1 hover:bg-surface-3',
                 )}
                 style={{ left, width: width - 3 }}
               >

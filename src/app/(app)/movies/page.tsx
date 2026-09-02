@@ -2,14 +2,13 @@
 
 import { Suspense, useEffect, useMemo, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Heart, Play, X } from 'lucide-react';
 import type { Category, Movie } from '@/types';
 import { api } from '@/lib/api/client';
 import { usePlayerStore } from '@/stores/playerStore';
 import { useUserStore } from '@/stores/userStore';
 import { TopBar } from '@/components/navigation/TopBar';
 import { ContentCard } from '@/components/vod/ContentCard';
-import { Artwork, EmptyState, ProgressBar, Skeleton } from '@/components/common';
+import { Icon, Artwork, EmptyState, ProgressBar, Skeleton } from '@/components/common';
 import { WhyWatch } from '@/components/ai/WhyWatch';
 import { formatDuration } from '@/lib/utils/time';
 import { cn } from '@/lib/utils/cn';
@@ -64,7 +63,7 @@ function MoviesInner() {
     <>
       <TopBar title="Movies" />
 
-      <div className="rail-scroll flex gap-1.5 overflow-x-auto border-b border-line/70 px-4 py-2.5">
+      <div className="rail-scroll flex gap-1.5 overflow-x-auto border-b border-line px-4 py-2.5">
         <Chip active={categoryId === null} onClick={() => setCategoryId(null)}>
           All
         </Chip>
@@ -146,7 +145,7 @@ function MovieDetail({ movie, onClose }: { movie: Movie; onClose: () => void }) 
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="relative mx-auto my-8 w-full max-w-4xl overflow-hidden rounded-card border border-line bg-surface-1 shadow-lift animate-slide-up"
+        className="relative mx-auto my-8 w-full max-w-4xl overflow-hidden rounded-card border border-line bg-surface-1 shadow-lift animate-zap-in"
       >
         <button
           type="button"
@@ -155,7 +154,7 @@ function MovieDetail({ movie, onClose }: { movie: Movie; onClose: () => void }) 
           aria-label="Close"
           className="tv-focus absolute right-4 top-4 z-10 rounded-full bg-black/50 p-2 text-ink-soft hover:text-ink focus:shadow-focus"
         >
-          <X className="h-4 w-4" aria-hidden />
+          <Icon name="iptv-close" size={16} />
         </button>
 
         <div className="relative h-52 overflow-hidden sm:h-64">
@@ -202,9 +201,9 @@ function MovieDetail({ movie, onClose }: { movie: Movie; onClose: () => void }) 
                 type="button"
                 data-focusable=""
                 onClick={() => play(false)}
-                className="tv-focus inline-flex items-center gap-2 rounded-tile bg-accent px-5 py-2.5 text-sm font-semibold text-white hover:bg-accent-bright focus:shadow-focus"
+                className="tv-focus inline-flex items-center gap-2 rounded-tile bg-accent px-5 py-2.5 text-sm font-semibold text-white hover:brightness-110 focus:shadow-focus"
               >
-                <Play className="h-4 w-4 fill-current" aria-hidden />
+                <Icon name="iptv-play" size={16} className="fill-current" />
                 {saved && !saved.completed ? 'Resume' : 'Play'}
               </button>
               {saved && !saved.completed ? (
@@ -227,7 +226,7 @@ function MovieDetail({ movie, onClose }: { movie: Movie; onClose: () => void }) 
                   favorite ? 'border-live/50 text-live' : 'border-line text-ink-soft hover:text-ink',
                 )}
               >
-                <Heart className={cn('h-4 w-4', favorite && 'fill-current')} aria-hidden />
+                <Icon name="iptv-favorite" size={16} />
                 {favorite ? 'In favorites' : 'Add to favorites'}
               </button>
             </div>

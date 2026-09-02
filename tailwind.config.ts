@@ -1,11 +1,17 @@
 import type { Config } from 'tailwindcss';
 
 /**
- * HENREN IPTV design system.
+ * StreamWise design system.
  *
- * A television interface, not a SaaS dashboard: near-black navy ground,
- * slightly lifted surfaces, one electric-blue accent used sparingly and
- * almost exclusively to communicate *focus*.
+ * Taken from `IPTV AI Prototype.dc.html` and `PROTOTYPE.md` §16. Two rules
+ * carry most of the identity:
+ *
+ *  - One accent. Cobalt #5B8CFF is used for interaction *and* for AI. There
+ *    is no separate "AI colour" and no rainbow gradient — intelligence is
+ *    signalled by the Intelligence Node in the icon, not by hue.
+ *  - Focus is a white ring, not a coloured one. On a television, viewed from
+ *    three metres, a white ring plus a small scale reads instantly where a
+ *    tinted glow does not.
  */
 const config: Config = {
   content: ['./src/**/*.{ts,tsx}'],
@@ -13,74 +19,108 @@ const config: Config = {
     extend: {
       colors: {
         ground: {
-          DEFAULT: '#05070d', // page background
-          deep: '#020307', // player letterbox / fullscreen
+          DEFAULT: '#0A0F1E', // page ground
+          deep: '#070B16', // body / player letterbox
+          lift: '#0C1226', // gradient mid-stop
         },
         surface: {
-          1: '#0b0f1a', // cards at rest
-          2: '#121826', // raised cards, sidebar
-          3: '#1a2233', // hover
-          4: '#232d42', // pressed / selected row
+          1: '#0D1424', // cards at rest
+          2: '#111A31', // raised cards, sidebar
+          3: '#101729', // panels
+          4: '#173066', // pressed / selected
         },
         line: {
-          DEFAULT: '#1e2739',
-          strong: '#2c3850',
+          DEFAULT: 'rgba(255,255,255,0.08)',
+          strong: 'rgba(255,255,255,0.18)',
+          solid: '#1B2540',
         },
         accent: {
-          DEFAULT: '#2f7dff', // electric blue
-          bright: '#5c9dff',
-          dim: '#1b4fa8',
-          glow: '#2f7dff',
+          DEFAULT: '#5B8CFF', // cobalt — interaction and AI alike
+          bright: '#8FB0FF',
+          dim: '#3A5DB8',
+          deep: '#173066',
         },
-        live: '#ff3b52',
-        ok: '#2fd07f',
-        warn: '#ffb02e',
+        live: {
+          DEFAULT: '#FF6B5E',
+          deep: '#8A1E1E',
+        },
+        ok: {
+          DEFAULT: '#4FD197',
+          soft: '#7FD6B8',
+        },
+        warn: '#E8B54F',
         ink: {
-          DEFAULT: '#ffffff',
-          soft: '#c3cbdb',
-          mute: '#8792a8',
-          faint: '#5a6478',
+          DEFAULT: '#E8ECF6', // primary
+          soft: '#B8C1D6',
+          mute: '#8A94AC', // secondary
+          faint: '#69748E', // tertiary
+          dim: '#526180',
         },
       },
       fontFamily: {
         sans: [
-          'var(--font-app)',
+          'Space Grotesk',
           'ui-sans-serif',
           'system-ui',
           '-apple-system',
           'Segoe UI',
           'Roboto',
-          'Helvetica Neue',
-          'Arial',
           'sans-serif',
         ],
       },
       borderRadius: {
-        card: '0.875rem',
-        tile: '0.625rem',
+        // The prototype is pill-heavy: chips, buttons and badges are all 999px.
+        pill: '999px',
+        card: '18px',
+        tile: '14px',
+        hero: '24px',
+        panel: '22px',
+      },
+      letterSpacing: {
+        // Uppercase section labels carry wide tracking throughout.
+        label: '0.14em',
+        kicker: '0.28em',
+        wide: '0.32em',
       },
       boxShadow: {
-        card: '0 8px 24px -12px rgba(0,0,0,0.9)',
-        lift: '0 18px 48px -18px rgba(0,0,0,0.95)',
-        focus: '0 0 0 2px #2f7dff, 0 0 28px -4px rgba(47,125,255,0.55)',
+        // The focus treatment, in three weights.
+        focus: '0 0 0 3px rgba(255,255,255,0.9)',
+        'focus-strong': '0 0 0 4px rgba(255,255,255,0.9), 0 12px 48px rgba(91,140,255,0.5)',
+        'focus-soft': '0 0 0 2px rgba(255,255,255,0.4)',
+        'focus-accent': '0 0 0 3px rgba(91,140,255,0.4)',
+        card: '0 14px 44px rgba(0,0,0,0.5)',
+        lift: '0 18px 60px rgba(91,140,255,0.22)',
+        hero: '0 24px 80px rgba(0,0,0,0.6)',
       },
       transitionDuration: {
-        // TV interaction budget: fast enough that a remote press feels direct.
-        DEFAULT: '180ms',
+        // Prototype timings, §8 of INTEGRATION.md.
+        focus: '140ms',
+        nav: '200ms',
+        panel: '220ms',
       },
       keyframes: {
-        'fade-in': { from: { opacity: '0' }, to: { opacity: '1' } },
-        'slide-up': {
-          from: { opacity: '0', transform: 'translateY(12px)' },
+        zapIn: {
+          from: { opacity: '0', transform: 'translateY(14px)' },
           to: { opacity: '1', transform: 'translateY(0)' },
         },
-        shimmer: {
-          '100%': { transform: 'translateX(100%)' },
+        panelIn: {
+          from: { opacity: '0', transform: 'translateX(40px)' },
+          to: { opacity: '1', transform: 'translateX(0)' },
         },
+        signal: {
+          '0%,100%': { opacity: '1' },
+          '50%': { opacity: '0.35' },
+        },
+        spinX: { to: { transform: 'rotate(360deg)' } },
+        fadeIn: { from: { opacity: '0' }, to: { opacity: '1' } },
+        shimmer: { '100%': { transform: 'translateX(100%)' } },
       },
       animation: {
-        'fade-in': 'fade-in 200ms ease-out both',
-        'slide-up': 'slide-up 220ms cubic-bezier(0.22,1,0.36,1) both',
+        'zap-in': 'zapIn 240ms cubic-bezier(0.22,1,0.36,1) both',
+        'panel-in': 'panelIn 220ms cubic-bezier(0.22,1,0.36,1) both',
+        signal: 'signal 1.6s ease-in-out infinite',
+        'spin-x': 'spinX 0.9s linear infinite',
+        'fade-in': 'fadeIn 180ms ease-out both',
         shimmer: 'shimmer 1.6s infinite',
       },
     },

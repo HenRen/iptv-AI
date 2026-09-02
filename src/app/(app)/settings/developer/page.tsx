@@ -1,11 +1,10 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import { Activity, ShieldCheck } from 'lucide-react';
 import type { DiagnosticsReport } from '@/types';
 import { api } from '@/lib/api/client';
 import { TopBar } from '@/components/navigation/TopBar';
-import { EmptyState, ErrorNotice, Focusable, ProgressBar, Spinner } from '@/components/common';
+import { Icon, EmptyState, ErrorNotice, Focusable, ProgressBar, Spinner } from '@/components/common';
 
 /**
  * IPTV Diagnostics.
@@ -50,9 +49,9 @@ export default function DeveloperPage() {
             </p>
             <Focusable
               onClick={() => void run()}
-              className="inline-flex items-center gap-2 rounded-tile bg-accent px-4 py-2 text-sm font-medium text-white hover:bg-accent-bright"
+              className="inline-flex items-center gap-2 rounded-tile bg-accent px-4 py-2 text-sm font-semibold text-ground hover:brightness-110"
             >
-              <Activity className="h-4 w-4" aria-hidden />
+              <Icon name="iptv-health" size={16} />
               Run diagnostics
             </Focusable>
           </div>
@@ -67,7 +66,7 @@ export default function DeveloperPage() {
             <EmptyState title="Connect a playlist first" />
           ) : (
             <>
-              <section className="tv-card p-5">
+              <section className="sw-card p-5">
                 <h2 className="mb-4 text-xs font-semibold uppercase tracking-wider text-ink-faint">
                   Connection
                 </h2>
@@ -85,7 +84,7 @@ export default function DeveloperPage() {
                 </dl>
               </section>
 
-              <section className="tv-card p-5">
+              <section className="sw-card p-5">
                 <h2 className="mb-4 text-xs font-semibold uppercase tracking-wider text-ink-faint">
                   Playlist health
                 </h2>
@@ -111,7 +110,7 @@ export default function DeveloperPage() {
                   />
                 </div>
 
-                <dl className="mt-6 grid grid-cols-2 gap-4 border-t border-line/60 pt-4 text-sm sm:grid-cols-4">
+                <dl className="mt-6 grid grid-cols-2 gap-4 border-t border-line pt-4 text-sm sm:grid-cols-4">
                   <Item label="Uncategorized" value={report.health.uncategorized.toLocaleString()} />
                   <Item
                     label="Duplicate groups"
@@ -126,7 +125,7 @@ export default function DeveloperPage() {
               </section>
 
               {report.notes.length > 0 ? (
-                <section className="tv-card p-5">
+                <section className="sw-card p-5">
                   <h2 className="mb-3 text-xs font-semibold uppercase tracking-wider text-ink-faint">
                     Findings
                   </h2>
@@ -142,7 +141,7 @@ export default function DeveloperPage() {
               ) : null}
 
               <p className="flex items-start gap-2 text-xs leading-relaxed text-ink-faint">
-                <ShieldCheck className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden />
+                <Icon name="iptv-shield-check" size={14} className="mt-0.5 shrink-0" />
                 Credentials are never included in diagnostics. Stream and artwork URLs shown
                 anywhere in this app point at this server&rsquo;s proxy, not at your provider.
               </p>

@@ -2,7 +2,7 @@
   "name": "henren-iptv",
   "version": "0.1.0",
   "private": true,
-  "description": "HENREN IPTV \u2014 a bring-your-own-playlist IPTV web application.",
+  "description": "HENREN IPTV — a bring-your-own-playlist IPTV web application.",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -17,7 +17,6 @@
   "dependencies": {
     "clsx": "^2.1.1",
     "hls.js": "^1.7.1",
-    "lucide-react": "^1.37.0",
     "mpegts.js": "^1.8.2",
     "next": "^15.5.24",
     "react": "^19.2.8",

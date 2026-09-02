@@ -2,7 +2,6 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Heart } from 'lucide-react';
 import type { Channel, Movie, Series } from '@/types';
 import { api } from '@/lib/api/client';
 import { usePlayerStore } from '@/stores/playerStore';
@@ -86,7 +85,7 @@ export default function FavoritesPage() {
           </div>
         ) : empty ? (
           <EmptyState
-            icon={<Heart className="h-8 w-8" aria-hidden />}
+            icon="iptv-favorites"
             title="No favorites yet"
             description="Press the heart on any channel, movie or series and it will appear here, on Home, and as a category in Live TV."
           />

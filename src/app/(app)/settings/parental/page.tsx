@@ -1,13 +1,12 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { EyeOff, Lock, LockOpen, ShieldAlert } from 'lucide-react';
 import type { Category } from '@/types';
 import { api } from '@/lib/api/client';
 import { useParentalStore } from '@/stores/parentalStore';
 import { usePlaylistStore } from '@/stores/playlistStore';
 import { TopBar } from '@/components/navigation/TopBar';
-import { ErrorNotice, Focusable, Skeleton } from '@/components/common';
+import { Icon, ErrorNotice, Focusable, Skeleton } from '@/components/common';
 import { cn } from '@/lib/utils/cn';
 
 /**
@@ -79,7 +78,7 @@ export default function ParentalPage() {
       <div className="min-h-0 flex-1 overflow-y-auto">
         <div className="mx-auto max-w-2xl space-y-8 px-6 py-8">
           <p className="flex items-start gap-2 rounded-card border border-warn/25 bg-warn/5 p-4 text-xs leading-relaxed text-ink-mute">
-            <ShieldAlert className="mt-0.5 h-4 w-4 shrink-0 text-warn" aria-hidden />
+            <Icon name="iptv-parental" size={16} className="mt-0.5 shrink-0 text-warn" />
             <span>
               This is a convenience lock for a shared living room, not a security boundary. The PIN
               is stored as a hash in this browser and anyone with developer tools can bypass it.
@@ -89,12 +88,12 @@ export default function ParentalPage() {
 
           <section>
             <SectionTitle>PIN</SectionTitle>
-            <div className="tv-card space-y-3 p-5">
+            <div className="sw-card space-y-3 p-5">
               <div className="flex items-center gap-2 text-sm">
                 {locked ? (
-                  <Lock className="h-4 w-4 text-warn" aria-hidden />
+                  <Icon name="iptv-parental" size={16} className="text-warn" />
                 ) : (
-                  <LockOpen className="h-4 w-4 text-ok" aria-hidden />
+                  <Icon name="iptv-parental" size={16} className="text-ok" />
                 )}
                 <span className="text-ink">
                   {!pinHash
@@ -130,7 +129,7 @@ export default function ParentalPage() {
                   data-focusable=""
                   onClick={() => void submitPin()}
                   disabled={pinInput.length < 4}
-                  className="tv-focus rounded-tile bg-accent px-4 py-2 text-sm font-medium text-white hover:bg-accent-bright focus:shadow-focus disabled:bg-surface-3 disabled:text-ink-faint"
+                  className="tv-focus rounded-tile bg-accent px-4 py-2 text-sm font-semibold text-ground hover:brightness-110 focus:shadow-focus disabled:bg-surface-3 disabled:text-ink-faint"
                 >
                   {!pinHash ? 'Set PIN' : locked ? 'Unlock' : 'Remove PIN'}
                 </button>
@@ -142,7 +141,7 @@ export default function ParentalPage() {
 
           <section>
             <SectionTitle>Adult content</SectionTitle>
-            <div className="tv-card p-5">
+            <div className="sw-card p-5">
               <div className="flex items-start gap-4">
                 <button
                   type="button"
@@ -192,11 +191,11 @@ export default function ParentalPage() {
                 ))}
               </div>
             ) : categories.length === 0 ? (
-              <p className="tv-card p-5 text-sm text-ink-faint">
+              <p className="sw-card p-5 text-sm text-ink-faint">
                 Connect a playlist to manage its categories.
               </p>
             ) : (
-              <ul className="tv-card max-h-[420px] divide-y divide-line/60 overflow-y-auto">
+              <ul className="sw-card max-h-[420px] divide-y divide-line overflow-y-auto">
                 {categories.map((category) => {
                   const isHidden = hidden.includes(category.id);
                   return (
@@ -206,13 +205,7 @@ export default function ParentalPage() {
                         aria-pressed={isHidden}
                         className="flex w-full items-center gap-3 px-4 py-2.5 hover:bg-surface-2"
                       >
-                        <EyeOff
-                          className={cn(
-                            'h-3.5 w-3.5 shrink-0',
-                            isHidden ? 'text-warn' : 'text-ink-faint opacity-30',
-                          )}
-                          aria-hidden
-                        />
+                        <Icon name="iptv-eye-off" size={16} />
                         <span
                           className={cn(
                             'min-w-0 flex-1 truncate text-sm',

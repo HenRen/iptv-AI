@@ -2,10 +2,9 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Sparkles } from 'lucide-react';
 import { aiApi } from '@/lib/api/aiClient';
 import { useAiStore } from '@/stores/aiStore';
-import { Artwork, Focusable, Skeleton } from '@/components/common';
+import { Icon, Artwork, Focusable, Skeleton } from '@/components/common';
 
 /**
  * AI 7 — programme and title explanations, plus similar content.
@@ -75,9 +74,9 @@ export function WhyWatch({
   return (
     <div className="mt-6 space-y-5">
       {summary ? (
-        <div className="rounded-card border border-line/60 bg-surface-2/40 p-4">
+        <div className="rounded-card border border-line bg-surface-2/40 p-4">
           <p className="mb-1.5 flex items-center gap-1.5 text-[11px] uppercase tracking-wider text-ink-faint">
-            <Sparkles className="h-3 w-3 text-accent" aria-hidden />
+            <Icon name="iptv-ai" size={12} className="text-accent" />
             Why watch
           </p>
           <p className="text-sm leading-relaxed text-ink-soft">{summary}</p>

@@ -1,9 +1,11 @@
-# HENREN IPTV
+# StreamWise
+
+**Your TV. Your content. Smarter.**
 
 A bring-your-own-playlist IPTV web application. Connect an Xtream Codes
 account, an M3U URL or an uploaded playlist file, and get Live TV, a real
-programme guide, movies and series in a dark, remote-friendly television
-interface.
+programme guide, movies, series and a sports hub in a television-first
+interface built to the StreamWise design system.
 
 This is a **player**. It carries no content of its own and performs no DRM
 circumvention or access-control bypass — it plays streams the user's own
@@ -78,6 +80,61 @@ Also complete: parental control (PIN, adult filter, hidden categories),
 audio/subtitle/quality track selection, and the AI & Privacy settings screen.
 
 Not built: catch-up/archive playback and multi-user accounts.
+
+---
+
+## The design system
+
+Implemented from `IPTV AI Prototype.dc.html`, `IPTV Icon System.dc.html`,
+`PROTOTYPE.md` and `INTEGRATION.md`.
+
+### The icon language is generated, not drawn
+
+`src/components/icons/paths.ts` ports the icon system's three primitives and
+builds all 69 icons from them:
+
+| | Primitive | Role |
+|---|---|---|
+| 01 | **Broadcast Frame** | 16:9 rounded geometry — the shared DNA. Never a literal TV outline. |
+| 02 | **The Signal Cut** | one diagonal interruption in every frame — the fingerprint for signal. |
+| 03 | **Intelligence Node** | a four-point constellation shared by the whole AI sub-family. Never a sparkle. |
+
+Because the paths are *generated* rather than hand-drawn, changing the frame
+radius once changes every icon built on it. Stroke stays 1.6 at every size
+(1.8 on focus) — a family whose stroke thickens with size stops reading as one
+family. There is no second icon library in the codebase; the utility glyphs
+the app needed beyond the original sheet (close, check, chevrons) are
+constructed from the same rules.
+
+### Two decisions carry the identity
+
+- **One accent.** Cobalt `#5B8CFF` is used for interaction *and* for AI.
+  There is no separate "AI colour" and no gradient — intelligence is signalled
+  by the Intelligence Node in the icon, not by hue.
+- **Focus is a white ring, not a coloured one.** At three metres a white ring
+  plus a small scale reads instantly where a tinted glow does not. Every
+  focusable goes through one primitive so the treatment cannot drift.
+
+Palette: ground `#0A0F1E` / `#070B16`, surfaces `#0D1424` / `#111A31`, live
+`#FF6B5E`, success `#4FD197`, text `#E8ECF6` → `#8A94AC` → `#69748E`.
+Type: Space Grotesk. Motion: sidebar 200ms, focus 140ms, overlays 220ms, zap
+overlay 3s auto-dismiss.
+
+### Remote control
+
+| Input | Action |
+|---|---|
+| Arrows | Spatial focus navigation |
+| OK (tap) | Select |
+| **OK (hold ≥600ms)** | Quick Actions for the focused channel or programme |
+| Back / Escape | error → quick action → fullscreen → last channel → history → home |
+| R / G / Y / B | Colour keys, remappable in Settings › Remote & Controls |
+| CH± / Page± | Zap |
+
+The colour-key legend in the top bar is the on-screen map of the remote's four
+buttons and reflects the user's own mapping. Long-press is handled once in the
+shell; a screen only declares *what* the target is with `data-qa-*`
+attributes.
 
 ---
 
@@ -249,6 +306,8 @@ tests/                parsers, normalization, matching, search, security
   catalog and EPG rate limits were too tight for the guide's per-scroll
   fetching; and Back on Live TV with no previous channel navigated out of the
   application entirely.
+- The redesign kept every service call: this was a UI layer swap onto the
+  existing, tested backend, not a rewrite.
 - `npm test` covers the parsers, normalizer, EPG matcher, search index,
   crypto, SSRF guard, manifest rewriting and every AI service.
   `npm run test:e2e` drives the §35 journeys in a real browser, including

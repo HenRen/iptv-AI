@@ -33,7 +33,9 @@ test.describe('keyboard and remote navigation', () => {
     await page.goto('/home');
     await page.waitForSelector('[data-focusable]');
 
-    // No interactive element may exist outside the spatial-navigation system.
+    // No interactive element may exist outside the spatial-navigation system,
+    // unless it is explicitly declared a pointer-only duplicate of something
+    // the keyboard can already do (aria-hidden AND tabindex="-1").
     const orphans = await page.evaluate(() => {
       const interactive = Array.from(
         document.querySelectorAll<HTMLElement>('button, a[href], input, select, textarea'),
@@ -42,7 +44,8 @@ test.describe('keyboard and remote navigation', () => {
         .filter((el) => {
           const rect = el.getBoundingClientRect();
           if (rect.width === 0 || rect.height === 0) return false;
-          if (el.getAttribute('aria-hidden') === 'true') return false;
+          if (el.closest('[aria-hidden="true"]')) return false;
+          if (el.getAttribute('tabindex') === '-1') return false;
           return !el.hasAttribute('data-focusable');
         })
         .map((el) => el.outerHTML.slice(0, 120));

@@ -2,7 +2,6 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Play } from 'lucide-react';
 import type { Channel, Movie, NowNext, Series } from '@/types';
 import { api } from '@/lib/api/client';
 import { usePlayerStore } from '@/stores/playerStore';
@@ -10,7 +9,7 @@ import { useUserStore } from '@/stores/userStore';
 import { usePlaylistStore } from '@/stores/playlistStore';
 import { TopBar } from '@/components/navigation/TopBar';
 import { ChannelCard, ContentCard } from '@/components/vod/ContentCard';
-import { Artwork, EmptyState, LiveBadge, Rail, Skeleton } from '@/components/common';
+import { Icon, Artwork, EmptyState, LiveBadge, Rail, Skeleton } from '@/components/common';
 import { SmartRails } from '@/components/ai/SmartRails';
 import { SportsTonight } from '@/components/ai/SportsTonight';
 import { AskTVButton } from '@/components/ai/AskTV';
@@ -179,7 +178,7 @@ export default function HomePage() {
                   onClick={() => watch(hero)}
                   className="tv-focus inline-flex items-center gap-2 rounded-tile bg-white px-6 py-2.5 text-sm font-semibold text-ground hover:bg-ink-soft focus:shadow-focus"
                 >
-                  <Play className="h-4 w-4 fill-current" aria-hidden />
+                  <Icon name="iptv-play" size={16} className="fill-current" />
                   Watch now
                 </button>
                 <AskTVButton className="border-white/25 bg-black/30 px-4 py-2.5 text-ink-soft" />

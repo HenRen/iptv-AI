@@ -2,7 +2,6 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Search as SearchIcon, Sparkles } from 'lucide-react';
 import type { Channel, EPGProgram, Movie, Series } from '@/types';
 import { api } from '@/lib/api/client';
 import { useDebounce } from '@/hooks/useDebounce';
@@ -10,7 +9,7 @@ import { usePlayerStore } from '@/stores/playerStore';
 import { useUserStore } from '@/stores/userStore';
 import { TopBar } from '@/components/navigation/TopBar';
 import { ChannelCard, ContentCard } from '@/components/vod/ContentCard';
-import { EmptyState, Rail, Skeleton } from '@/components/common';
+import { Icon, EmptyState, Rail, Skeleton } from '@/components/common';
 import { clockTime, dayLabel } from '@/lib/utils/time';
 import { Focusable } from '@/components/common';
 
@@ -78,11 +77,12 @@ export default function SearchPage() {
     <>
       <TopBar title="Search" />
 
-      <div className="border-b border-line/70 px-6 py-5">
+      <div className="border-b border-line px-6 py-5">
         <label className="relative mx-auto block max-w-2xl">
-          <SearchIcon
-            className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-faint"
-            aria-hidden
+          <Icon
+            name="iptv-search"
+            size={18}
+            className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-ink-faint"
           />
           <input
             ref={inputRef}
@@ -95,7 +95,7 @@ export default function SearchPage() {
           />
         </label>
         <p className="mx-auto mt-2 max-w-2xl text-[11px] text-ink-faint">
-          <Sparkles className="mr-1 inline h-3 w-3" aria-hidden />
+          <Icon name="iptv-ai" size={12} className="mr-1 inline" />
           Ask TV natural-language search arrives with the AI layer — it resolves every result back
           to something that actually exists in your playlist.
         </p>
@@ -106,7 +106,7 @@ export default function SearchPage() {
           <EmptyState
             title="Search your playlist"
             description="Type at least two characters. Results are grouped by channels, movies, series and programmes airing in the next 24 hours."
-            icon={<SearchIcon className="h-8 w-8" aria-hidden />}
+            icon="iptv-search"
           />
         ) : loading ? (
           <div className="space-y-8">
@@ -155,7 +155,7 @@ export default function SearchPage() {
                             .channelsByIds([channelId])
                             .then((page) => page.items[0] && watch(page.items[0]));
                         }}
-                        className="flex w-full items-center gap-4 rounded-tile border border-line/60 bg-surface-1 p-3 hover:bg-surface-3"
+                        className="flex w-full items-center gap-4 rounded-tile border border-line bg-surface-1 p-3 hover:bg-surface-3"
                       >
                         <span className="w-24 shrink-0 text-xs tabular-nums text-ink-mute">
                           {dayLabel(program.start)} {clockTime(program.start)}

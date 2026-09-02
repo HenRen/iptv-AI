@@ -149,7 +149,7 @@ export default function LivePage() {
       <TopBar title="Live TV" />
 
       <div className="flex min-h-0 flex-1 flex-col lg:flex-row">
-        <aside className="hidden w-[210px] shrink-0 border-r border-line/70 lg:block">
+        <aside className="hidden w-[210px] shrink-0 border-r border-line lg:block">
           <CategoryRail
             categories={categories}
             loading={loadingCategories}
@@ -161,7 +161,7 @@ export default function LivePage() {
           />
         </aside>
 
-        <section className="flex min-h-0 w-full shrink-0 flex-col border-r border-line/70 lg:w-[420px]">
+        <section className="flex min-h-0 w-full shrink-0 flex-col border-r border-line lg:w-[420px]">
           <MobileCategoryStrip
             categories={categories}
             selected={selectedCategory}
@@ -248,7 +248,7 @@ function MobileCategoryStrip({
   onSelect: (id: string) => void;
 }) {
   return (
-    <div className="rail-scroll flex gap-2 overflow-x-auto border-b border-line/70 px-3 py-2 lg:hidden">
+    <div className="rail-scroll flex gap-2 overflow-x-auto border-b border-line px-3 py-2 lg:hidden">
       {[{ id: ALL_CATEGORY, name: 'All' }, ...categories].map((c) => (
         <button
           key={c.id}

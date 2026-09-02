@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { Search, X } from 'lucide-react';
 import type { Category, Channel, EPGProgram } from '@/types';
 import { api } from '@/lib/api/client';
 import { useDebounce } from '@/hooks/useDebounce';
@@ -9,7 +8,7 @@ import { usePlayerStore } from '@/stores/playerStore';
 import { useUserStore } from '@/stores/userStore';
 import { TopBar } from '@/components/navigation/TopBar';
 import { GuideGrid } from '@/components/guide/GuideGrid';
-import { EmptyState, ErrorNotice, LiveBadge } from '@/components/common';
+import { Icon, EmptyState, ErrorNotice, LiveBadge } from '@/components/common';
 import { dayLabel, timeRange } from '@/lib/utils/time';
 import { cn } from '@/lib/utils/cn';
 
@@ -76,12 +75,9 @@ export default function GuidePage() {
     <>
       <TopBar title="TV Guide" />
 
-      <div className="flex items-center gap-3 border-b border-line/70 px-4 py-2.5">
+      <div className="flex items-center gap-3 border-b border-line px-4 py-2.5">
         <label className="relative flex-1 max-w-xs">
-          <Search
-            className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-ink-faint"
-            aria-hidden
-          />
+          <Icon name="iptv-search" size={14} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-ink-faint" />
           <input
             data-focusable=""
             value={query}
@@ -194,7 +190,7 @@ function ProgramDetail({
       onClick={onClose}
     >
       <div
-        className="w-full max-w-lg rounded-card border border-line bg-surface-1 p-6 shadow-lift animate-slide-up"
+        className="w-full max-w-lg rounded-card border border-line bg-surface-1 p-6 shadow-lift animate-zap-in"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="mb-4 flex items-start justify-between gap-4">
@@ -214,7 +210,7 @@ function ProgramDetail({
             aria-label="Close"
             className="tv-focus rounded-full p-1.5 text-ink-mute hover:text-ink focus:shadow-focus"
           >
-            <X className="h-4 w-4" aria-hidden />
+            <Icon name="iptv-close" size={16} />
           </button>
         </div>
 
@@ -243,7 +239,7 @@ function ProgramDetail({
             type="button"
             data-focusable=""
             onClick={onWatch}
-            className="tv-focus flex-1 rounded-tile bg-accent px-4 py-2.5 text-sm font-semibold text-white hover:bg-accent-bright focus:shadow-focus"
+            className="tv-focus flex-1 rounded-tile bg-accent px-4 py-2.5 text-sm font-semibold text-white hover:brightness-110 focus:shadow-focus"
           >
             {live ? 'Watch now' : `Go to ${channel.name}`}
           </button>

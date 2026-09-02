@@ -2,14 +2,13 @@
 
 import { Suspense, useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Heart, Play, X } from 'lucide-react';
 import type { Category, Episode, Series } from '@/types';
 import { api } from '@/lib/api/client';
 import { usePlayerStore } from '@/stores/playerStore';
 import { useUserStore } from '@/stores/userStore';
 import { TopBar } from '@/components/navigation/TopBar';
 import { ContentCard } from '@/components/vod/ContentCard';
-import { Artwork, EmptyState, ProgressBar, Skeleton, Spinner } from '@/components/common';
+import { Icon, Artwork, EmptyState, ProgressBar, Skeleton, Spinner } from '@/components/common';
 import { WhyWatch } from '@/components/ai/WhyWatch';
 import { formatDuration } from '@/lib/utils/time';
 import { cn } from '@/lib/utils/cn';
@@ -60,7 +59,7 @@ function SeriesInner() {
     <>
       <TopBar title="Series" />
 
-      <div className="rail-scroll flex gap-1.5 overflow-x-auto border-b border-line/70 px-4 py-2.5">
+      <div className="rail-scroll flex gap-1.5 overflow-x-auto border-b border-line px-4 py-2.5">
         <Chip active={categoryId === null} onClick={() => setCategoryId(null)}>
           All
         </Chip>
@@ -171,7 +170,7 @@ function SeriesDetail({ seriesId, onClose }: { seriesId: string; onClose: () => 
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="relative mx-auto my-8 w-full max-w-4xl overflow-hidden rounded-card border border-line bg-surface-1 shadow-lift animate-slide-up"
+        className="relative mx-auto my-8 w-full max-w-4xl overflow-hidden rounded-card border border-line bg-surface-1 shadow-lift animate-zap-in"
       >
         <button
           type="button"
@@ -180,7 +179,7 @@ function SeriesDetail({ seriesId, onClose }: { seriesId: string; onClose: () => 
           aria-label="Close"
           className="tv-focus absolute right-4 top-4 z-10 rounded-full bg-black/50 p-2 text-ink-soft hover:text-ink focus:shadow-focus"
         >
-          <X className="h-4 w-4" aria-hidden />
+          <Icon name="iptv-close" size={16} />
         </button>
 
         {loading ? (
@@ -237,7 +236,7 @@ function SeriesDetail({ seriesId, onClose }: { seriesId: string; onClose: () => 
                     favorite ? 'border-live/50 text-live' : 'border-line text-ink-soft hover:text-ink',
                   )}
                 >
-                  <Heart className={cn('h-4 w-4', favorite && 'fill-current')} aria-hidden />
+                  <Icon name="iptv-favorite" size={16} />
                   {favorite ? 'In favorites' : 'Add to favorites'}
                 </button>
 
@@ -250,7 +249,7 @@ function SeriesDetail({ seriesId, onClose }: { seriesId: string; onClose: () => 
             </div>
 
             {series.seasons && series.seasons.length > 0 ? (
-              <div className="border-t border-line/70 px-6 py-5">
+              <div className="border-t border-line px-6 py-5">
                 <div className="rail-scroll mb-4 flex gap-1.5 overflow-x-auto">
                   {series.seasons.map((s) => (
                     <Chip
@@ -272,7 +271,7 @@ function SeriesDetail({ seriesId, onClose }: { seriesId: string; onClose: () => 
                           type="button"
                           data-focusable=""
                           onClick={() => play(episode)}
-                          className="tv-focus flex w-full items-center gap-4 rounded-tile border border-line/60 bg-surface-2/50 p-3 text-left hover:bg-surface-3 focus:shadow-focus"
+                          className="tv-focus flex w-full items-center gap-4 rounded-tile border border-line bg-surface-2/50 p-3 text-left hover:bg-surface-3 focus:shadow-focus"
                         >
                           <span className="w-6 shrink-0 text-center text-sm font-semibold tabular-nums text-ink-faint">
                             {episode.episodeNumber}
@@ -306,7 +305,7 @@ function SeriesDetail({ seriesId, onClose }: { seriesId: string; onClose: () => 
                               {formatDuration(episode.durationSecs)}
                             </span>
                           ) : null}
-                          <Play className="h-4 w-4 shrink-0 text-ink-faint" aria-hidden />
+                          <Icon name="iptv-play" size={16} className="shrink-0 text-ink-faint" />
                         </button>
                       </li>
                     );
@@ -314,7 +313,7 @@ function SeriesDetail({ seriesId, onClose }: { seriesId: string; onClose: () => 
                 </ul>
               </div>
             ) : (
-              <div className="border-t border-line/70 px-6 py-8">
+              <div className="border-t border-line px-6 py-8">
                 <p className="text-center text-sm text-ink-faint">
                   Your provider returned no episode list for this series.
                 </p>
