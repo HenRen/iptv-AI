@@ -31,7 +31,7 @@ of it running through the same normalization pipeline as real data.
 npm run typecheck   # all three packages
 npm test            # 252 unit tests (166 in core, 86 in server)
 npm run build       # standalone API bundle, then the Next.js production build
-npm run test:e2e    # 38 Playwright journeys against the mock provider
+npm run test:e2e    # 41 Playwright journeys against the mock provider
 npm run test:all    # all of the above, in order
 
 npm run serve:api   # the API on its own, without Next.js — what a TV app talks to
@@ -319,8 +319,15 @@ apps/
       stores/         zustand: playlist, player, user
       hooks/          spatial nav, virtual list, debounce
       lib/            api client, player engine selection, cn, voice input
-    e2e/              §35 Playwright journeys
+    public/fonts/     Space Grotesk, self-hosted under the OFL
+    e2e/              §35 Playwright journeys, plus the off-origin guard
 ```
+
+Nothing the app serves is fetched from a third party at runtime. That is a
+deployment requirement rather than a preference: a television on a hotel or
+municipal network often cannot reach a CDN, and the failure mode is a request
+that hangs rather than one that fails, so the `load` event never fires and
+anything waiting on it stalls. `e2e/self-contained.spec.ts` asserts it.
 
 ### Why the split
 
