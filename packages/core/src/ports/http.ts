@@ -20,6 +20,11 @@ export interface HttpResponse {
 export interface HttpRequestOptions {
   method?: string;
   headers?: Record<string, string>;
+  /**
+   * A string body only. Core never uploads a stream, and keeping it to a
+   * string means an implementation needs nothing but its platform's fetch.
+   */
+  body?: string;
   /** Hard ceiling on the whole request. Implementations must abort, not just reject. */
   timeoutMs?: number;
   /** Bypass any intermediate cache. */

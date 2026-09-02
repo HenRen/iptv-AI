@@ -11,6 +11,8 @@
     ".": "./src/index.ts",
     "./ports": "./src/ports/index.ts",
     "./design": "./src/design/index.ts",
+    "./testing": "./src/testing/index.ts",
+    "./client": "./src/client/ApiClient.ts",
     "./*": "./src/*.ts"
   },
   "scripts": {

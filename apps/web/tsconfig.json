@@ -9,6 +9,7 @@
     "paths": {
       "@/*": ["./src/*"],
       "@streamwise/core": ["../../packages/core/src/index.ts"],
+      "@streamwise/core/*": ["../../packages/core/src/*"],
       "@streamwise/server": ["../../packages/server/src/index.ts"],
       "@streamwise/server/routes/*": ["../../packages/server/src/routes/*"]
     }

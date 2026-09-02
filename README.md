@@ -29,7 +29,7 @@ of it running through the same normalization pipeline as real data.
 
 ```bash
 npm run typecheck   # all three packages
-npm test            # 169 unit tests (144 in core, 25 in server)
+npm test            # 252 unit tests (166 in core, 86 in server)
 npm run build       # standalone API bundle, then the Next.js production build
 npm run test:e2e    # 38 Playwright journeys against the mock provider
 npm run test:all    # all of the above, in order
@@ -291,9 +291,11 @@ packages/
         xtream/ m3u/ xmltv/ mock/
       ai/             AIProvider interface, rules + OpenAI providers
       design/         tokens (colour, spacing, motion) + the icon generator
+      client/         ApiClient — the only network surface a TV app has
+      testing/        the port contracts, as cases any platform can run
       types/ utils/
       host.d.ts       the WHATWG globals core assumes, and nothing more
-    tests/            parsers, normalization, matching, search, AI, tokens
+    tests/            parsers, normalization, matching, search, AI, conformance
     README.md         every port and its web implementation
 
   server/             @streamwise/server — the API, deployable on its own
@@ -303,7 +305,8 @@ packages/
       storage/        FileStorageAdapter
       runtime.ts      the one place core is bound to Node
       standalone.ts   the same handlers over node:http, for TV clients
-    tests/            the real cipher, the real HMAC, the private-range table
+    tests/            the real cipher, the real HMAC, the private-range table,
+                      port conformance, and a reference client end to end
 
 apps/
   web/                @streamwise/web — the Next.js application
@@ -330,6 +333,15 @@ table.
 
 The SSRF guard and the rate limiter deliberately did **not** move into core.
 They protect a proxy, and a proxy is a server.
+
+An interface alone does not make two implementations agree, so the port
+contracts ship as runnable cases in `@streamwise/core/testing`. The Node
+adapters pass all four suites; a Lightning or React Native binding runs the
+same cases against MMKV, Keychain or its own fetch and finds out where it
+differs before the screens are built.
+`packages/server/tests/reference-client.test.ts` closes the loop: it drives
+the standalone API through core's `ApiClient` with no React, no Next.js and
+no browser anywhere in the process.
 
 ---
 

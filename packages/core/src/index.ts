@@ -40,3 +40,5 @@ export * from './design/index';
 
 export * from './utils/time';
 export * from './utils/url';
+
+export * from './client/ApiClient';

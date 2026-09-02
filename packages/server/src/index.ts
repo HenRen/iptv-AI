@@ -9,6 +9,7 @@
  * purpose: they protect a proxy, and a proxy is a server.
  */
 
+export { createApiServer } from './app';
 export { bootServer, ensureServerBooted } from './runtime';
 
 export { FileStorageAdapter } from './storage/file';

@@ -14,7 +14,7 @@ import { HttpTimeoutError, type HttpPort, type HttpRequestOptions, type HttpResp
 export function createFetchHttpPort(fetchImpl: typeof fetch = fetch): HttpPort {
   return {
     async fetch(url: string, options: HttpRequestOptions = {}): Promise<HttpResponse> {
-      const { timeoutMs, headers, method, noStore } = options;
+      const { timeoutMs, headers, method, body, noStore } = options;
       const controller = new AbortController();
       const timer =
         timeoutMs === undefined ? null : setTimeout(() => controller.abort(), timeoutMs);
@@ -23,6 +23,7 @@ export function createFetchHttpPort(fetchImpl: typeof fetch = fetch): HttpPort {
         res = await fetchImpl(url, {
           method,
           headers,
+          body,
           signal: controller.signal,
           cache: noStore ? 'no-store' : undefined,
         });
