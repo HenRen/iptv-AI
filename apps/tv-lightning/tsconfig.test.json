@@ -1,0 +1,25 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "lib": [
+      "ES2022"
+    ],
+    "types": [
+      "node"
+    ],
+    "tsBuildInfoFile": "./node_modules/.cache/tsconfig.tv-lightning-test.tsbuildinfo",
+    "paths": {
+      "@streamwise/core": [
+        "../../packages/core/src/index.ts"
+      ],
+      "@streamwise/core/*": [
+        "../../packages/core/src/*"
+      ]
+    }
+  },
+  "include": [
+    "src/**/*.ts",
+    "tests/**/*.ts",
+    "../../packages/core/src/host.d.ts"
+  ]
+}

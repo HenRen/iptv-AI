@@ -2,7 +2,7 @@
   "name": "streamwise",
   "version": "0.1.0",
   "private": true,
-  "description": "StreamWise IPTV — a bring-your-own-playlist IPTV application. Monorepo root.",
+  "description": "StreamWise IPTV \u2014 a bring-your-own-playlist IPTV application. Monorepo root.",
   "workspaces": [
     "packages/*",
     "apps/*"
@@ -12,8 +12,8 @@
     "build": "npm run build -w @streamwise/server && npm run build -w @streamwise/web",
     "start": "npm run start -w @streamwise/web",
     "serve:api": "npm run start -w @streamwise/server",
-    "typecheck": "npm run typecheck -w @streamwise/core && npm run typecheck -w @streamwise/server && npm run typecheck -w @streamwise/web",
-    "test": "npm run test -w @streamwise/core && npm run test -w @streamwise/server",
+    "typecheck": "npm run typecheck -w @streamwise/core && npm run typecheck -w @streamwise/server && npm run typecheck -w @streamwise/web && npm run typecheck -w @streamwise/tv-lightning",
+    "test": "npm run test -w @streamwise/core && npm run test -w @streamwise/server && npm run test -w @streamwise/tv-lightning",
     "test:e2e": "npm run test:e2e -w @streamwise/web",
     "test:all": "npm run typecheck && npm test && npm run build && npm run test:e2e"
   },
