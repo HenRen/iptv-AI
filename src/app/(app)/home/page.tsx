@@ -11,6 +11,9 @@ import { usePlaylistStore } from '@/stores/playlistStore';
 import { TopBar } from '@/components/navigation/TopBar';
 import { ChannelCard, ContentCard } from '@/components/vod/ContentCard';
 import { Artwork, EmptyState, LiveBadge, Rail, Skeleton } from '@/components/common';
+import { SmartRails } from '@/components/ai/SmartRails';
+import { SportsTonight } from '@/components/ai/SportsTonight';
+import { AskTVButton } from '@/components/ai/AskTV';
 import { timeRange } from '@/lib/utils/time';
 
 /**
@@ -169,7 +172,7 @@ export default function HomePage() {
                   {heroNowNext.now.description}
                 </p>
               ) : null}
-              <div className="mt-5">
+              <div className="mt-5 flex items-center gap-3">
                 <button
                   type="button"
                   data-focusable=""
@@ -179,12 +182,17 @@ export default function HomePage() {
                   <Play className="h-4 w-4 fill-current" aria-hidden />
                   Watch now
                 </button>
+                <AskTVButton className="border-white/25 bg-black/30 px-4 py-2.5 text-ink-soft" />
               </div>
             </div>
           </section>
         ) : null}
 
         <div className="space-y-8">
+          <SmartRails nowNext={nowNext} />
+
+          <SportsTonight />
+
           {continueWatching.length > 0 ? (
             <Rail title="Continue Watching">
               {continueWatching.map((p) => {

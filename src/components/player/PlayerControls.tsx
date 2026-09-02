@@ -16,6 +16,7 @@ import { usePlayerStore } from '@/stores/playerStore';
 import { cn } from '@/lib/utils/cn';
 import { formatDuration } from '@/lib/utils/time';
 import { LiveBadge } from '@/components/common';
+import { TrackMenus } from './TrackMenu';
 
 /**
  * Player chrome.
@@ -165,6 +166,8 @@ export function PlayerControls({
             <ControlButton label={muted ? 'Unmute' : 'Mute'} onClick={toggleMute}>
               {muted ? <VolumeX className="h-4 w-4" aria-hidden /> : <Volume2 className="h-4 w-4" aria-hidden />}
             </ControlButton>
+
+            <TrackMenus compact={compact} />
 
             {pipAvailable ? (
               <ControlButton label="Picture in picture" onClick={() => void togglePip()}>

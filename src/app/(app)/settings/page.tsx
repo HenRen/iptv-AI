@@ -24,6 +24,18 @@ export default function SettingsPage() {
                 description="Connect, refresh, reconnect or remove providers."
               />
               <LinkRow
+                href="/settings/ai"
+                icon={<Sparkles className="h-4 w-4" aria-hidden />}
+                title="AI & Privacy"
+                description="Ask TV, recommendations, watchlist and playlist health."
+              />
+              <LinkRow
+                href="/settings/parental"
+                icon={<ShieldCheck className="h-4 w-4" aria-hidden />}
+                title="Parental control"
+                description="PIN, adult-content filter and hidden categories."
+              />
+              <LinkRow
                 href="/settings/developer"
                 icon={<Wrench className="h-4 w-4" aria-hidden />}
                 title="Developer · IPTV Diagnostics"
@@ -34,43 +46,7 @@ export default function SettingsPage() {
 
           <EpgSection />
 
-          <section>
-            <SectionTitle>AI &amp; Privacy</SectionTitle>
-            <div className="tv-card p-5">
-              <div className="flex items-start gap-3">
-                <Sparkles className="mt-0.5 h-4 w-4 shrink-0 text-accent" aria-hidden />
-                <div className="text-sm">
-                  <p className="font-medium text-ink">AI features are not configured</p>
-                  <p className="mt-1 leading-relaxed text-ink-mute">
-                    The AI layer ships as interfaces plus a mock provider. Deterministic playlist
-                    normalization, category classification and EPG matching already run without any
-                    AI provider — they are rules, not a model.
-                  </p>
-                  <p className="mt-3 leading-relaxed text-ink-faint">
-                    IPTV credentials and credential-bearing URLs are never sent to an AI provider,
-                    whichever one is configured.
-                  </p>
-                </div>
-              </div>
-            </div>
-          </section>
 
-          <section>
-            <SectionTitle>Parental control</SectionTitle>
-            <div className="tv-card p-5">
-              <div className="flex items-start gap-3">
-                <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-ink-mute" aria-hidden />
-                <div className="text-sm">
-                  <p className="font-medium text-ink">Adult content is hidden by default</p>
-                  <p className="mt-1 leading-relaxed text-ink-mute">
-                    Categories and channels the classifier flags as adult are filtered out of Home,
-                    Live TV, the guide and search. PIN-protected access and per-category hiding are
-                    wired through the same filter and are not yet exposed here.
-                  </p>
-                </div>
-              </div>
-            </div>
-          </section>
         </div>
       </div>
     </>

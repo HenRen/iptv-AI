@@ -16,3 +16,7 @@ coverage/
 *.tar.gz
 *.tgz
 *.zip
+
+.e2e-data/
+playwright-report/
+test-results/

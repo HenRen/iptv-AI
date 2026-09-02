@@ -13,7 +13,26 @@ export interface LimitConfig {
   burst: number;
 }
 
+/**
+ * Global scaling, so a deployment can loosen or tighten limits without
+ * editing code — and so an end-to-end suite, which legitimately hammers these
+ * endpoints far harder than a person does, can raise them rather than the
+ * production defaults being weakened to make tests pass.
+ *
+ * `HENREN_RATE_LIMIT=off` disables limiting entirely (test environments only).
+ */
+const SCALE = (() => {
+  const raw = process.env.HENREN_RATE_LIMIT;
+  if (!raw) return 1;
+  if (raw.toLowerCase() === 'off') return Infinity;
+  const parsed = Number(raw);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : 1;
+})();
+
 export function takeToken(key: string, { rate, burst }: LimitConfig): boolean {
+  if (SCALE === Infinity) return true;
+  rate *= SCALE;
+  burst *= SCALE;
   const now = Date.now();
   const bucket = buckets.get(key) ?? { tokens: burst, updatedAt: now };
   const elapsed = (now - bucket.updatedAt) / 1000;
@@ -40,8 +59,15 @@ export const LIMITS = {
   /** Segment requests are frequent by nature — HLS pulls one every few seconds. */
   stream: { rate: 30, burst: 90 } satisfies LimitConfig,
   image: { rate: 40, burst: 200 } satisfies LimitConfig,
-  api: { rate: 8, burst: 24 } satisfies LimitConfig,
-  connect: { rate: 0.5, burst: 5 } satisfies LimitConfig,
+  /**
+   * Catalog and EPG reads. Sized for the guide, which fires one batched
+   * request per visible row-window: fast scrolling through a long channel
+   * list legitimately produces a burst well above a handful of requests.
+   */
+  api: { rate: 25, burst: 80 } satisfies LimitConfig,
+  /** Connecting or refreshing a playlist is expensive upstream, so it stays
+   *  tight — but not so tight that a few corrections in a row lock you out. */
+  connect: { rate: 1, burst: 10 } satisfies LimitConfig,
 };
 
 export function clientKey(req: Request, scope: string): string {

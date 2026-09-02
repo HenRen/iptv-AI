@@ -1,4 +1,5 @@
 import {
+  adultAllowed,
   getLiveCategories,
   getLiveChannels,
   getMovieCategories,
@@ -30,7 +31,9 @@ export async function GET(req: Request) {
   if (!playlistId) playlistId = (await getActivePlaylist())?.id ?? null;
   if (!playlistId) return ok({ items: [], total: 0, offset: 0, limit: 0, noPlaylist: true });
 
-  const includeAdult = params.get('includeAdult') === '1';
+  // Deliberately NOT taken from the query string: a client cannot opt
+  // itself back into adult content by editing a URL.
+  const includeAdult = await adultAllowed();
 
   try {
     if (params.get('categories') === '1') {

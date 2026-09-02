@@ -10,6 +10,7 @@ import { useUserStore } from '@/stores/userStore';
 import { TopBar } from '@/components/navigation/TopBar';
 import { ContentCard } from '@/components/vod/ContentCard';
 import { Artwork, EmptyState, ProgressBar, Skeleton, Spinner } from '@/components/common';
+import { WhyWatch } from '@/components/ai/WhyWatch';
 import { formatDuration } from '@/lib/utils/time';
 import { cn } from '@/lib/utils/cn';
 
@@ -243,6 +244,8 @@ function SeriesDetail({ seriesId, onClose }: { seriesId: string; onClose: () => 
                 {series.plot ? (
                   <p className="mt-4 max-w-2xl text-sm leading-relaxed text-ink-soft">{series.plot}</p>
                 ) : null}
+
+                <WhyWatch contentId={series.id} kind="series" />
               </div>
             </div>
 

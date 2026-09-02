@@ -593,9 +593,12 @@ export async function search(
   const [catalog, epg] = await Promise.all([loadCatalog(playlistId), loadEpg(playlistId)]);
   if (!catalog) return { channels: [], movies: [], series: [], programs: [] };
 
-  const hidden = await readHiddenCategories(playlistId);
+  const [hidden, allowAdult] = await Promise.all([
+    readHiddenCategories(playlistId),
+    adultAllowed(),
+  ]);
   const visible = <T extends { categoryId: string | null; adult: boolean }>(x: T) =>
-    !x.adult && (!x.categoryId || !hidden.includes(x.categoryId));
+    (allowAdult || !x.adult) && (!x.categoryId || !hidden.includes(x.categoryId));
 
   const channels = catalog.channelIndex
     .search(trimmed, limitPerGroup * 2)
@@ -811,4 +814,14 @@ async function readHiddenCategories(playlistId: string): Promise<string[]> {
     KEYS.settings,
   );
   return settings?.hiddenCategories?.[playlistId] ?? [];
+}
+
+/**
+ * Whether adult content may be returned at all. Defaults to false, so the
+ * filter is applied even before a client has expressed a preference —
+ * unclassified installs are safe, not permissive.
+ */
+export async function adultAllowed(): Promise<boolean> {
+  const settings = await getStorage().getJSON<{ allowAdult?: boolean }>(KEYS.settings);
+  return Boolean(settings?.allowAdult);
 }

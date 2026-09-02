@@ -26,8 +26,10 @@ of it running through the same normalization pipeline as real data.
 
 ```bash
 npm run typecheck   # tsc --noEmit
-npm test            # 128 unit tests
+npm test            # 168 unit tests
 npm run build       # production build
+npm run test:e2e    # 36 Playwright journeys against the mock provider
+npm run test:all    # all of the above, in order
 ```
 
 `HENREN_SECRET` encrypts stored provider credentials at rest. It is required
@@ -53,10 +55,29 @@ in production; a fixed development key is used when it is unset.
 | 13 | Performance (virtualization, indexed search) | done |
 | 14 | Security hardening | done |
 | 15 | Testing + diagnostics | done |
-| 16 | AI layer | interfaces + rules provider; no model wired |
+| 16 | AI layer | all 12 features, on a rules provider; no model wired |
 
-Not yet built: parental-control PIN UI, catch-up/archive playback, multi-user
-accounts, the Ask TV assistant surface, and voice input.
+**Phase 16 detail** — every item is implemented and tested:
+
+| | Feature | Where |
+|---|---|---|
+| AI 1 | Ask TV assistant | `components/ai/AskTV.tsx`, `lib/ai/assistant/IntentService.ts` |
+| AI 2 | Smart playlist organizer | `lib/ai/classification/ClassificationService.ts` |
+| AI 3 | Smart groups | `lib/ai/recommendations/RecommendationService.ts` |
+| AI 4 | Personalized home | `components/ai/SmartRails.tsx` |
+| AI 5 | Sports intelligence | `lib/ai/epg/SportsIntelligence.ts`, `components/ai/SportsTonight.tsx` |
+| AI 6 | Smart EPG matching | `lib/ai/epg/EPGMatchingService.ts` |
+| AI 7 | Programme explanations | `components/ai/WhyWatch.tsx` |
+| AI 8 | Voice remote | `lib/ai/voice/useVoiceInput.ts` |
+| AI 9 | Semantic search | `lib/ai/search/SemanticSearchService.ts` |
+| AI 10 | Smart watchlist | `lib/ai/assistant/WatchlistService.ts` |
+| AI 11 | AI diagnostics | `lib/ai/diagnostics/PlaylistHealthService.ts` |
+| AI 12 | Playlist clean view | `PlaylistHealthService.cleanView()` |
+
+Also complete: parental control (PIN, adult filter, hidden categories),
+audio/subtitle/quality track selection, and the AI & Privacy settings screen.
+
+Not built: catch-up/archive playback and multi-user accounts.
 
 ---
 
@@ -218,10 +239,17 @@ tests/                parsers, normalization, matching, search, security
   build environment cannot reach an external IPTV host. Connect your real
   provider through the UI and check: authentication, channel counts, logos,
   live playback, movie playback, series episode lists, EPG coverage.
-- Two bugs found and fixed during verification, both with regression tests:
-  a missing query parameter defaulted to `limit: 0` (which silently made
-  search return nothing), and quality variants sharing a `tvg-id` got two
-  interleaved mock schedules.
+- Six bugs found and fixed during verification, each with a regression test:
+  a missing query parameter defaulted to `limit: 0` (silently making search
+  return nothing); quality variants sharing a `tvg-id` produced two
+  interleaved mock schedules; `ContentGenre` had `entertainment` and
+  `international` values no rule could ever produce, so mainstream channels
+  fell to `other` and emptied the Home genre rails; sports detection missed
+  bare fixture titles like "Ajax - PSV" and spelled-out "Formula One"; the
+  catalog and EPG rate limits were too tight for the guide's per-scroll
+  fetching; and Back on Live TV with no previous channel navigated out of the
+  application entirely.
 - `npm test` covers the parsers, normalizer, EPG matcher, search index,
-  crypto, SSRF guard, manifest rewriting and the AI guard rails. Browser
-  end-to-end tests are not yet written.
+  crypto, SSRF guard, manifest rewriting and every AI service.
+  `npm run test:e2e` drives the §35 journeys in a real browser, including
+  the AI layer's grounding guarantees and the security boundaries.

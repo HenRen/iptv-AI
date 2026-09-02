@@ -2,14 +2,17 @@
   "name": "henren-iptv",
   "version": "0.1.0",
   "private": true,
-  "description": "HENREN IPTV — a bring-your-own-playlist IPTV web application.",
+  "description": "HENREN IPTV \u2014 a bring-your-own-playlist IPTV web application.",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:all": "npm run typecheck && npm test && npm run build && npm run test:e2e"
   },
   "dependencies": {
     "clsx": "^2.1.1",
@@ -24,6 +27,7 @@
     "zustand": "^5.0.15"
   },
   "devDependencies": {
+    "@playwright/test": "^1.62.1",
     "@types/node": "^26.4.0",
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.5",

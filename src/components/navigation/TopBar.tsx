@@ -7,6 +7,7 @@ import type { ConnectionStatus } from '@/types';
 import { usePlaylistStore } from '@/stores/playlistStore';
 import { cn } from '@/lib/utils/cn';
 import { clockTime } from '@/lib/utils/time';
+import { AskTVButton } from '@/components/ai/AskTV';
 
 const STATUS_LABEL: Record<ConnectionStatus | 'no-playlist', string> = {
   connected: 'Connected',
@@ -48,6 +49,7 @@ export function TopBar({ title }: { title?: string }) {
       <h1 className="truncate text-sm font-semibold tracking-tight text-ink">{title}</h1>
 
       <div className="flex items-center gap-4">
+        <AskTVButton className="hidden sm:inline-flex" />
         <div
           className="flex items-center gap-2 text-xs text-ink-mute"
           title={active?.lastError ?? undefined}

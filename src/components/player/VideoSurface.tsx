@@ -4,6 +4,7 @@ import { useEffect, useRef } from 'react';
 import { usePlayerStore } from '@/stores/playerStore';
 import { useUserStore } from '@/stores/userStore';
 import { attachStream, type AttachedEngine } from '@/lib/player/engine';
+import { setActiveEngine } from '@/lib/player/activeEngine';
 
 /**
  * The single <video> element in the application.
@@ -37,6 +38,7 @@ export function VideoSurface({ className }: { className?: string }) {
 
     engineRef.current?.destroy();
     engineRef.current = null;
+    setActiveEngine(null);
     triedFallback.current = false;
 
     if (!source) {
@@ -81,6 +83,9 @@ export function VideoSurface({ className }: { className?: string }) {
         return;
       }
       engineRef.current = engine;
+      // Publish the live engine so the controls can enumerate audio,
+      // subtitle and quality tracks without going through React state.
+      setActiveEngine(engine);
     };
 
     void attach(source.url, source.container);
@@ -89,6 +94,7 @@ export function VideoSurface({ className }: { className?: string }) {
       cancelled = true;
       engineRef.current?.destroy();
       engineRef.current = null;
+      setActiveEngine(null);
     };
   }, [source, setLoading, setError]);
 

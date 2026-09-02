@@ -18,6 +18,9 @@ export type EngineKind = 'native' | 'hls' | 'mpegts' | 'unsupported';
 
 export interface AttachedEngine {
   kind: EngineKind;
+  /** The underlying engine instance (Hls / mpegts player), for track
+   *  enumeration in src/lib/player/tracks.ts. Null for native playback. */
+  handle: unknown;
   destroy: () => void;
 }
 
@@ -72,7 +75,7 @@ export async function attachStream(
       'This stream uses a format the browser cannot play. Try a different quality or a native app.',
       false,
     );
-    return { kind, destroy: () => {} };
+    return { kind, handle: null, destroy: () => {} };
   }
 
   if (kind === 'native') {
@@ -81,6 +84,7 @@ export async function attachStream(
     onReady?.();
     return {
       kind,
+      handle: null,
       destroy: () => {
         video.removeAttribute('src');
         video.load();
@@ -92,7 +96,7 @@ export async function attachStream(
     const { default: Hls } = await import('hls.js');
     if (!Hls.isSupported()) {
       onError('This browser cannot play HLS streams.', false);
-      return { kind: 'unsupported', destroy: () => {} };
+      return { kind: 'unsupported', handle: null, destroy: () => {} };
     }
     const hls = new Hls({
       lowLatencyMode: false,
@@ -127,14 +131,14 @@ export async function attachStream(
 
     hls.loadSource(url);
     hls.attachMedia(video);
-    return { kind, destroy: () => hls.destroy() };
+    return { kind, handle: hls, destroy: () => hls.destroy() };
   }
 
   // mpegts
   const mpegts = (await import('mpegts.js')).default;
   if (!mpegts.isSupported()) {
     onError('This browser cannot play MPEG-TS streams.', false);
-    return { kind: 'unsupported', destroy: () => {} };
+    return { kind: 'unsupported', handle: null, destroy: () => {} };
   }
   const player = mpegts.createPlayer(
     { type: 'mpegts', isLive, url, cors: false },
@@ -157,6 +161,7 @@ export async function attachStream(
 
   return {
     kind,
+    handle: player,
     destroy: () => {
       try {
         player.pause();

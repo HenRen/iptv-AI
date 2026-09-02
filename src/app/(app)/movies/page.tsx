@@ -10,6 +10,7 @@ import { useUserStore } from '@/stores/userStore';
 import { TopBar } from '@/components/navigation/TopBar';
 import { ContentCard } from '@/components/vod/ContentCard';
 import { Artwork, EmptyState, ProgressBar, Skeleton } from '@/components/common';
+import { WhyWatch } from '@/components/ai/WhyWatch';
 import { formatDuration } from '@/lib/utils/time';
 import { cn } from '@/lib/utils/cn';
 
@@ -238,6 +239,8 @@ function MovieDetail({ movie, onClose }: { movie: Movie; onClose: () => void }) 
                 Your provider supplied no description for this title.
               </p>
             )}
+
+            <WhyWatch contentId={movie.id} kind="movie" />
 
             {movie.cast || movie.director ? (
               <dl className="mt-5 space-y-1 text-xs">
