@@ -16,8 +16,9 @@ provider has authorized.
 ## Quick start
 
 ```bash
-npm install
-cp .env.example .env.local          # then set HENREN_SECRET
+npm install                         # npm workspaces; installs all three packages
+cp apps/web/.env.example \
+   apps/web/.env.local              # then set HENREN_SECRET
 npm run dev                         # http://localhost:3000
 ```
 
@@ -27,15 +28,20 @@ gives you 30 channels, 48 hours of guide data, 20 movies and 10 series, all
 of it running through the same normalization pipeline as real data.
 
 ```bash
-npm run typecheck   # tsc --noEmit
-npm test            # 168 unit tests
-npm run build       # production build
-npm run test:e2e    # 36 Playwright journeys against the mock provider
+npm run typecheck   # all three packages
+npm test            # 169 unit tests (144 in core, 25 in server)
+npm run build       # standalone API bundle, then the Next.js production build
+npm run test:e2e    # 38 Playwright journeys against the mock provider
 npm run test:all    # all of the above, in order
+
+npm run serve:api   # the API on its own, without Next.js — what a TV app talks to
 ```
 
 `HENREN_SECRET` encrypts stored provider credentials at rest. It is required
-in production; a fixed development key is used when it is unset.
+in production; a fixed development key is used when it is unset. Next.js
+reads `.env.local` from the app directory, so it belongs in `apps/web/` —
+the standalone API server takes the same variables from its process
+environment instead.
 
 ---
 
@@ -90,8 +96,11 @@ Implemented from `IPTV AI Prototype.dc.html`, `IPTV Icon System.dc.html`,
 
 ### The icon language is generated, not drawn
 
-`src/components/icons/paths.ts` ports the icon system's three primitives and
-builds all 69 icons from them:
+`packages/core/src/design/icons.ts` ports the icon system's three primitives
+and builds all 69 icons from them. It lives in core rather than in the web
+app because the paths it emits are plain strings: `react-native-svg` renders
+them verbatim and Lightning rasterises them to textures, so the icon family
+ports to a TV build essentially for free.
 
 | | Primitive | Role |
 |---|---|---|
@@ -219,9 +228,10 @@ zapping feel instant.
 
 ### Persistence
 
-Everything goes through `StorageAdapter`. v1 ships `FileStorageAdapter`
-(atomic JSON writes under `.data/`). Moving to PostgreSQL means implementing
-that interface once — no call sites change.
+Everything goes through `StoragePort`. The server ships `FileStorageAdapter`
+(atomic JSON writes under `.data/`); a TV build binds MMKV or AsyncStorage.
+Moving to PostgreSQL means implementing that interface once — no call sites
+change, in any of the apps.
 
 ### The AI layer
 
@@ -266,26 +276,60 @@ is.
 
 ## Project layout
 
+A monorepo, so that a Lightning app and a React Native TV app can be added
+later without either of them forking the business logic. Nothing about the
+web app changed in behaviour when it was split out; what changed is that
+6,100 lines of it are now platform-free.
+
 ```
-src/
-  app/
-    (app)/            shell + screens (home, live, guide, movies, series, …)
-    api/              catalog, epg, search, play, stream, image, diagnostics
-    welcome/          first-launch connection flow
-  components/
-    common/           Focusable, Artwork, Rail, skeletons
-    live/ guide/ player/ vod/ navigation/ onboarding/
-  lib/
-    iptv/             adapters, normalization, catalog, IPTVService
-      xtream/ m3u/ xmltv/ mock/
-    ai/               AIProvider interface, rules + OpenAI providers
-    player/           engine selection
-    security/         crypto, SSRF guard, rate limiting
-    storage/          StorageAdapter + file implementation
-  stores/             zustand: playlist, player, user
-  hooks/              spatial nav, virtual list, debounce
-tests/                parsers, normalization, matching, search, security
+packages/
+  core/               @streamwise/core — no DOM, no platform APIs, no Node
+    src/
+      ports/          StoragePort, CryptoPort, HttpPort, UrlGuardPort,
+                      SecureStorePort + configureCore()
+      iptv/           adapters, normalization, catalog, IPTVService
+        xtream/ m3u/ xmltv/ mock/
+      ai/             AIProvider interface, rules + OpenAI providers
+      design/         tokens (colour, spacing, motion) + the icon generator
+      types/ utils/
+      host.d.ts       the WHATWG globals core assumes, and nothing more
+    tests/            parsers, normalization, matching, search, AI, tokens
+    README.md         every port and its web implementation
+
+  server/             @streamwise/server — the API, deployable on its own
+    src/
+      routes/         catalog, epg, search, play, stream, image, diagnostics…
+      security/       node crypto, SSRF guard, rate limiting
+      storage/        FileStorageAdapter
+      runtime.ts      the one place core is bound to Node
+      standalone.ts   the same handlers over node:http, for TV clients
+    tests/            the real cipher, the real HMAC, the private-range table
+
+apps/
+  web/                @streamwise/web — the Next.js application
+    src/
+      app/
+        (app)/        shell + screens (home, live, guide, movies, series, …)
+        api/          thin bindings onto @streamwise/server/routes/*
+        welcome/      first-launch connection flow
+      components/     common, live, guide, player, vod, navigation, icons
+      stores/         zustand: playlist, player, user
+      hooks/          spatial nav, virtual list, debounce
+      lib/            api client, player engine selection, cn, voice input
+    e2e/              §35 Playwright journeys
 ```
+
+### Why the split
+
+The same catalogue, EPG and AI code has to run in a Next.js route, a
+standalone Node server, a WebGL scene graph and a React Native TV app. It can
+only do that if it never mentions `fs`, `crypto`, `fetch`, `document` or
+`process` — so it does not. Everything the platform provides arrives through
+a port, installed once at start-up; see `packages/core/README.md` for the
+table.
+
+The SSRF guard and the rate limiter deliberately did **not** move into core.
+They protect a proxy, and a proxy is a server.
 
 ---
 

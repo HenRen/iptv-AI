@@ -1,0 +1,37 @@
+{
+  "name": "@streamwise/web",
+  "version": "0.1.0",
+  "private": true,
+  "description": "StreamWise IPTV web application.",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "typecheck": "tsc --noEmit",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui"
+  },
+  "dependencies": {
+    "@streamwise/core": "*",
+    "@streamwise/server": "*",
+    "clsx": "^2.1.1",
+    "hls.js": "^1.7.1",
+    "mpegts.js": "^1.8.2",
+    "next": "^15.5.24",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
+    "server-only": "^0.0.1",
+    "tailwind-merge": "^3.6.0",
+    "zustand": "^5.0.15"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.62.1",
+    "@types/node": "^26.4.0",
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.2.5",
+    "autoprefixer": "^10.5.4",
+    "postcss": "^8.5.26",
+    "tailwindcss": "^3.4.19",
+    "typescript": "^5.9.3"
+  }
+}

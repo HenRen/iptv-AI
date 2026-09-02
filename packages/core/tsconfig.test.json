@@ -1,0 +1,10 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "lib": ["ES2022"],
+    "types": ["node"],
+    "tsBuildInfoFile": "./node_modules/.cache/tsconfig.core-test.tsbuildinfo",
+    "paths": { "@streamwise/core": ["./src/index.ts"], "@streamwise/core/*": ["./src/*"] }
+  },
+  "include": ["src/**/*.ts", "tests/**/*.ts"]
+}
