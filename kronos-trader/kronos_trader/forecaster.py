@@ -49,6 +49,9 @@ class Paths:
 class KronosForecaster:
     def __init__(self, cfg: Config, model=None, tokenizer=None):
         self.cfg = cfg
+        if cfg.lookback > 512:
+            raise ValueError(f"lookback {cfg.lookback} > 512: Kronos-small/base zijn getraind op max 512 kaarsen")
+
         if str(cfg.kronos_dir) not in sys.path:
             sys.path.insert(0, str(cfg.kronos_dir))
         try:

@@ -108,6 +108,24 @@ python -m kronos_trader journal --recheck   # draai elke studie opnieuw op de ni
 
 Volgorde zoals een fund het doet: **vraag → backtest → oordeel → sweep → paper → pas dan echt geld.**
 
+## Wat je moet weten voordat je live gaat
+
+- **Er gaan nooit echte orders uit.** Deze code heeft geen koppeling met een broker of
+  Binance-account. "Live" betekent hier: live paper trading op echte koersen.
+- **Kosten zitten in elk signaal.** Een setup moet ook na fees en slippage nog
+  reward:risk ≥ 1,2 en een positieve verwachting hebben. Een stop-out kost 1% van je
+  equity **inclusief** kosten.
+- **Backtest en paper trader beslissen op dezelfde kaarsen.** Met `--every 6` op 1h is dat om
+  00, 06, 12 en 18 uur UTC. Stops, targets en tijdstops worden wél elke kaars gecontroleerd.
+  Wil je elk uur beslissen, backtest dan ook met `--every 1` (veel trager).
+- **Veiligheid in de paper trader:** exits worden direct opgeslagen, dus een crash telt een
+  trade nooit dubbel. Er kan maar één trader per symbool draaien, en bij oude of ontbrekende
+  Binance-data wordt er niet gehandeld. Na een fout probeert hij het na 60 s opnieuw.
+- **Weekend:** PAXG handelt 24/7, terwijl de echte goudmarkt in het weekend dicht is.
+  Weekendkaarsen zijn dun, en maandag kan er een gat ontstaan.
+- **Futures/short:** funding fees worden niet gemodelleerd.
+- **Tijden** in charts en logs zijn UTC.
+
 ## Telegram-alerts
 
 1. Open @BotFather in Telegram, stuur `/newbot` en kopieer de token.

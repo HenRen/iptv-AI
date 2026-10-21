@@ -39,9 +39,13 @@ class Signal:
         return {k: round(v, 4) if isinstance(v, float) else v for k, v in asdict(self).items()}
 
 
-def evaluate_levels(paths: Paths, side: int, entry: float, stop: float, target: float) -> tuple[float, float]:
-    """Replay the bracket on every sampled path. Returns (win share, mean R)."""
-    risk = abs(entry - stop)
+def evaluate_levels(paths: Paths, side: int, entry: float, stop: float, target: float,
+                    cost: float = 0.0) -> tuple[float, float]:
+    """Replay the bracket on every sampled path. Returns (win share, mean R after costs).
+
+    `cost` is the round-trip fee + slippage per unit; a loss at the stop is -1R.
+    """
+    risk = abs(entry - stop) + cost
     if side == 1:
         hit_stop, hit_target = paths.low <= stop, paths.high >= target
     else:
@@ -53,9 +57,9 @@ def evaluate_levels(paths: Paths, side: int, entry: float, stop: float, target: 
     losses = (first_stop <= first_target) & (first_stop < h)
     timed = ~wins & ~losses
     r = np.zeros(paths.n)
-    r[wins] = abs(target - entry) / risk
+    r[wins] = (abs(target - entry) - cost) / risk
     r[losses] = -1.0
-    r[timed] = side * (paths.close[timed, -1] - entry) / risk
+    r[timed] = (side * (paths.close[timed, -1] - entry) - cost) / risk
     return float(wins.mean()), float(r.mean())
 
 
@@ -79,14 +83,16 @@ def build_signal(paths: Paths, regime: Regime, last_close: float, atr: float, cf
     stop_dist = float(np.clip(stop_dist, cfg.min_stop_atr * atr, cfg.max_stop_atr * atr))
     stop = entry - side * stop_dist
     target = float(np.median(paths.close[:, -1]))
-    reward = side * (target - entry)
-    rr = reward / stop_dist if stop_dist > 0 else 0.0
+    # Fees and slippage are paid on the way in and out, win or lose.
+    cost = entry * 2 * (cfg.fee + cfg.slippage)
+    reward = side * (target - entry) - cost
+    rr = reward / (stop_dist + cost)
 
     if reward <= 0 or rr < cfg.min_reward_risk:
-        none.reason = f"{regime.label}: reward:risk {rr:.2f} < {cfg.min_reward_risk}"
+        none.reason = f"{regime.label}: reward:risk na kosten {rr:.2f}, minimum {cfg.min_reward_risk}"
         return none
 
-    win_prob, exp_r = evaluate_levels(paths, side, entry, stop, target)
+    win_prob, exp_r = evaluate_levels(paths, side, entry, stop, target, cost)
     if win_prob < cfg.min_win_prob or exp_r <= 0:
         none.reason = f"{regime.label}: winkans {win_prob:.0%} / E[R] {exp_r:.2f} te laag"
         return none

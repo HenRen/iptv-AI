@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import sys
 
 from .config import Config, load_dotenv
@@ -175,6 +176,8 @@ def cmd_telegram_test(cfg: Config, args) -> None:
 
 def main(argv=None) -> None:
     load_dotenv()
+    # Run any op Apple's MPS backend lacks on the CPU instead of crashing.
+    os.environ.setdefault("PYTORCH_ENABLE_MPS_FALLBACK", "1")
     parser = argparse.ArgumentParser(prog="kronos_trader", description="Kronos goud (XAU/USD) forecaster & paper trader")
     sub = parser.add_subparsers(dest="cmd", required=True)
     commands = {
@@ -202,6 +205,8 @@ def main(argv=None) -> None:
         if name == "journal":
             p.add_argument("--recheck", action="store_true", help="draai elke studie opnieuw op de nieuwste data")
         if name == "paper":
+            p.add_argument("--every", dest="forecast_every", type=int,
+                           help="voorspel elke N kaarsen, gelijk aan je backtest (default 6)")
             p.add_argument("--once", action="store_true", help="verwerk één kaars en stop (voor cron)")
 
     args = parser.parse_args(argv)

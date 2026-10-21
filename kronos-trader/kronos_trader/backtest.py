@@ -17,7 +17,7 @@ import pandas as pd
 
 from .config import Config
 from .data import atr as compute_atr
-from .data import interval_ms
+from .data import interval_ms, is_decision_bar
 from .execution import check_exit, close_position, open_position, unrealized
 from .forecaster import Paths
 from .regime import classify
@@ -66,7 +66,8 @@ def run_backtest(cfg: Config, df: pd.DataFrame, forecaster, tag: str = "kronos",
     pending_entry = None
     pending_exit = False
     trades, curve, forecasts = [], [], []
-    decisions = list(range(start, len(df) - 1, cfg.forecast_every))
+    decisions = [i for i in range(start, len(df) - 1)
+                 if is_decision_bar(df["timestamps"].iloc[i], cfg.interval, cfg.forecast_every)]
     decision_set = set(decisions)
     t0 = time.time()
 

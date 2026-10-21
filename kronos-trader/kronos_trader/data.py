@@ -103,13 +103,15 @@ def load_candles(symbol: str, interval: str, bars: int, market: str = "spot",
         if cache_file.exists():
             cached = pd.read_csv(cache_file, parse_dates=["timestamps"])
 
-    frames = [cached]
-    if cached.empty or _ms(cached["timestamps"].iloc[0]) > want_start:
-        end = _ms(cached["timestamps"].iloc[0]) if not cached.empty else None
-        frames.insert(0, fetch_klines(symbol, interval, want_start, end, market))
-    start = _ms(cached["timestamps"].iloc[-1]) + step if not cached.empty else want_start
-    if cached.empty or start < now_ms - step:
-        frames.append(fetch_klines(symbol, interval, start, None, market))
+    if cached.empty:
+        frames = [fetch_klines(symbol, interval, want_start, None, market)]
+    else:
+        frames = [cached]
+        first, last = _ms(cached["timestamps"].iloc[0]), _ms(cached["timestamps"].iloc[-1])
+        if first > want_start:
+            frames.insert(0, fetch_klines(symbol, interval, want_start, first, market))
+        if last + step < now_ms - step:
+            frames.append(fetch_klines(symbol, interval, last + step, None, market))
 
     df = pd.concat([f for f in frames if not f.empty], ignore_index=True)
     df = df.drop_duplicates("timestamps").sort_values("timestamps").reset_index(drop=True)
@@ -122,6 +124,17 @@ def load_candles(symbol: str, interval: str, bars: int, market: str = "spot",
 
 def _ms(ts) -> int:
     return int(pd.Timestamp(ts).value // 1_000_000)
+
+
+def is_decision_bar(ts, interval: str, every: int) -> bool:
+    """Forecast on every `every`-th candle, aligned to the clock (e.g. 00/06/12/18 UTC
+    for 1h with every=6), so the backtest and the paper trader decide on the same candles."""
+    return (_ms(ts) // interval_ms(interval)) % max(every, 1) == 0
+
+
+def missing_candles(df: pd.DataFrame, interval: str) -> int:
+    gaps = df["timestamps"].diff().dropna() / pd.Timedelta(milliseconds=interval_ms(interval))
+    return int((gaps - 1).clip(lower=0).sum())
 
 
 def future_timestamps(last: pd.Timestamp, interval: str, n: int) -> pd.Series:

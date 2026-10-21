@@ -162,7 +162,9 @@ def test_sweep_replays_cached_forecasts(tmp_path):
     grid = {"trend_agreement": [0.6, 0.7], "min_win_prob": [0.5, 0.6], "min_reward_risk": [1.0]}
     res = run_sweep(cfg, df, Counting(cfg), "t", grid)
     assert len(res["table"]) == 4
-    decisions = len(range(cfg.lookback - 1, len(df) - 1, cfg.forecast_every))
+    from kronos_trader.data import is_decision_bar
+
+    decisions = sum(is_decision_bar(t, "1h", cfg.forecast_every) for t in df["timestamps"].iloc[cfg.lookback - 1:-1])
     assert len(calls) == decisions  # Kronos runs once per candle, not once per combination
     if res["best"] is not None:
         assert res["plateau"]["label"] in ("PLATEAU", "LUCKY NUMBER", "NO EDGE")
@@ -177,3 +179,108 @@ def test_journal_roundtrip(tmp_path):
     assert journal.append(f, {"symbol": "PAXGUSDT"}, s) == 1
     assert journal.append(f, {"symbol": "PAXGUSDT"}, s, recheck_of=1) == 2
     assert "recheck van #1" in journal.table(journal.load(f))
+
+
+# --- regressions found in review -------------------------------------------------
+
+def test_signal_rejected_when_costs_eat_the_move():
+    cfg = Config(horizon=12)
+    p = fan(2000, 0.25, 0.05, h=12)  # ~0.15% expected move, ~0.26% round-trip costs
+    sig = build_signal(p, classify(p, 2000, 2.0, cfg), 2000, 2.0, cfg)
+    assert sig.side == 0 and "kosten" in sig.reason
+
+
+def test_stop_out_loses_about_one_r_including_costs():
+    cfg = Config(fee_rate=0.001, slippage_bps=3, risk_per_trade=0.01)
+    sig = Signal(1, 2000, 1980, 2050, 0.7, 0.5, 2, False, "")
+    pos = open_position(sig, 2000, 10_000, "t0", cfg)
+    trade = close_position(pos, pos.stop, "t1", "stop", cfg)
+    assert trade.pnl == pytest.approx(-100, rel=0.01)  # 1% of equity, not 1% plus fees
+
+
+def test_empty_cache_downloads_once(tmp_path, monkeypatch):
+    import kronos_trader.data as data
+
+    calls = []
+    monkeypatch.setattr(data, "fetch_klines", lambda *a, **k: calls.append(a) or candles(50))
+    data.load_candles("PAXGUSDT", "1h", 40, "spot", tmp_path)
+    assert len(calls) == 1
+
+
+def _paper(tmp_path, monkeypatch, df, n, forecaster=None, every=1):
+    import kronos_trader.paper as paper
+
+    monkeypatch.setattr(paper, "load_candles", lambda *a, **k: df.iloc[:n[0]].tail(912).reset_index(drop=True))
+    cfg = Config(state_dir=tmp_path, output_dir=tmp_path, data_dir=tmp_path, forecast_every=every)
+    return paper.PaperTrader(cfg, forecaster or RandomWalkForecaster(cfg))
+
+
+def _now(df, n):
+    return int(df["timestamps"].iloc[n[0] - 1].value // 1_000_000) + 3_600_000 + 5_000
+
+
+def test_paper_crash_after_exit_does_not_double_count(tmp_path, monkeypatch):
+    df = candles(1200, drift=0.0004, seed=5)
+    n = [1000]
+
+    class Flaky(RandomWalkForecaster):
+        fail = False
+
+        def sample(self, *a, **k):
+            if self.fail:
+                raise RuntimeError("boom")
+            return super().sample(*a, **k)
+
+    fc = Flaky(Config())
+    t = _paper(tmp_path, monkeypatch, df, n, fc)
+    while t.state["position"] is None:
+        t.step(_now(df, n))
+        n[0] += 1
+    stop = t.state["position"]["stop"]
+    i = n[0] - 1
+    df.loc[i, ["high", "low", "close"]] = [df.loc[i, "open"], stop - 50, stop - 40]
+    fc.fail = True
+    with pytest.raises(RuntimeError):
+        t.step(_now(df, n))
+    fc.fail = False
+    t.step(_now(df, n))
+    assert len(t.state["trades"]) == 1
+    # state on disk agrees after a restart
+    t._lock.close()
+    t2 = _paper(tmp_path, monkeypatch, df, n, fc)
+    assert len(t2.state["trades"]) == 1
+
+
+def test_paper_refuses_stale_data_and_second_instance(tmp_path, monkeypatch):
+    from kronos_trader.paper import StaleData
+
+    df = candles(1100)
+    n = [1000]
+    t = _paper(tmp_path, monkeypatch, df, n)
+    with pytest.raises(StaleData):
+        t.step(_now(df, n) + 3 * 3_600_000)
+    with pytest.raises(RuntimeError, match="al een paper trader"):
+        _paper(tmp_path, monkeypatch, df, n)
+
+
+def test_paper_forecasts_on_same_candles_as_backtest(tmp_path, monkeypatch):
+    from kronos_trader.data import is_decision_bar
+
+    df = candles(1100)
+    n = [1000]
+    t = _paper(tmp_path, monkeypatch, df, n, every=6)
+    forecasted = []
+    for _ in range(24):
+        info = t.step(_now(df, n))
+        forecasted.append(info["regime"] is not None)
+        n[0] += 1
+    expected = [is_decision_bar(df["timestamps"].iloc[k - 1], "1h", 6) for k in range(1000, 1024)]
+    assert forecasted == expected and sum(forecasted) == 4
+
+
+def test_kronos_rejects_context_over_512():
+    pytest.importorskip("torch")
+    from kronos_trader.forecaster import KronosForecaster
+
+    with pytest.raises(ValueError, match="512"):
+        KronosForecaster(Config(lookback=600), model=object(), tokenizer=object())

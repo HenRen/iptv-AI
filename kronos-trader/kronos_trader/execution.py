@@ -22,7 +22,7 @@ class Position:
     target: float
     opened_at: str
     entry_fee: float
-    risk: float  # cash lost at the stop, before costs
+    risk: float  # cash lost at the stop, including costs (= 1R)
     bars_held: int = 0
 
     def as_dict(self) -> dict:
@@ -51,11 +51,14 @@ def open_position(signal: Signal, ref_price: float, equity: float, when, cfg: Co
     stop_dist = side * (fill - signal.stop)
     if stop_dist <= 0 or side * (signal.target - fill) <= 0:
         return None  # price gapped through the stop or the target
-    qty = equity * cfg.risk_per_trade / stop_dist
+    # Loss per unit if stopped out: the distance plus both fees and the exit slippage.
+    loss_per_unit = stop_dist + fill * cfg.fee + signal.stop * (cfg.fee + cfg.slippage)
+    qty = equity * cfg.risk_per_trade / loss_per_unit
     qty = min(qty, equity * cfg.max_leverage / fill)
     if qty <= 0:
         return None
-    return Position(side, qty, fill, signal.stop, signal.target, str(when), qty * fill * cfg.fee, qty * stop_dist)
+    return Position(side, qty, fill, signal.stop, signal.target, str(when), qty * fill * cfg.fee,
+                    qty * loss_per_unit)
 
 
 def check_exit(pos: Position, bar: pd.Series) -> tuple[float, str] | None:
