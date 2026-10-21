@@ -58,6 +58,7 @@ class Config:
     # --- backtest -----------------------------------------------------------
     backtest_days: int = 365
     forecast_every: int = 6  # re-forecast every N candles (cost/accuracy tradeoff)
+    holdout_fraction: float = 0.3  # last 30% of the test is the out-of-sample window
 
     # --- io -----------------------------------------------------------------
     data_dir: Path = ROOT / "data"

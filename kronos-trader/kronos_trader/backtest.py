@@ -32,23 +32,29 @@ class CachedForecaster:
             f"_N{cfg.sample_count}_T{cfg.temperature}_p{cfg.top_p}_s{cfg.seed}")
         self.dir.mkdir(parents=True, exist_ok=True)
         self.hits = self.misses = 0
+        self.memory: dict[str, Paths] = {}  # a sweep replays the same forecasts many times
 
     def sample(self, history: pd.DataFrame, interval: str) -> Paths:
         key = pd.Timestamp(history["timestamps"].iloc[-1]).strftime("%Y%m%dT%H%M")
+        if key in self.memory:
+            self.hits += 1
+            return self.memory[key]
         f = self.dir / f"{key}.npz"
         if f.exists():
             self.hits += 1
             with np.load(f) as d:
-                return Paths.from_npz(d)
-        self.misses += 1
-        paths = self.inner.sample(history, interval)
-        np.savez_compressed(f, **paths.to_npz())
+                paths = Paths.from_npz(d)
+        else:
+            self.misses += 1
+            paths = self.inner.sample(history, interval)
+            np.savez_compressed(f, **paths.to_npz())
+        self.memory[key] = paths
         return paths
 
 
 def run_backtest(cfg: Config, df: pd.DataFrame, forecaster, tag: str = "kronos",
                  progress: bool = True) -> dict:
-    fc = CachedForecaster(forecaster, cfg, tag)
+    fc = forecaster if isinstance(forecaster, CachedForecaster) else CachedForecaster(forecaster, cfg, tag)
     df = df.reset_index(drop=True)
     atr = compute_atr(df, cfg.atr_period).to_numpy()
     start = cfg.lookback - 1
@@ -128,23 +134,19 @@ def run_backtest(cfg: Config, df: pd.DataFrame, forecaster, tag: str = "kronos",
 
 def summarize(cfg: Config, trades: pd.DataFrame, curve: pd.DataFrame, fc: pd.DataFrame,
               df: pd.DataFrame) -> dict:
-    eq = curve["equity"].to_numpy()
-    rets = np.diff(eq) / eq[:-1]
     bars_per_year = 365 * 86_400_000 / interval_ms(cfg.interval)
-    years = len(eq) / bars_per_year
-    peak = np.maximum.accumulate(eq)
-    total = eq[-1] / eq[0] - 1
-    bh = curve["close"].iloc[-1] / curve["close"].iloc[0] - 1
+    strat = _stats(curve["equity"].to_numpy(), bars_per_year)
+    bh = _stats(curve["close"].to_numpy(), bars_per_year)
 
     s = {
         "symbol": cfg.symbol, "interval": cfg.interval, "market": cfg.market,
         "from": str(curve["timestamps"].iloc[0]), "to": str(curve["timestamps"].iloc[-1]),
         "fee_per_side": cfg.fee, "slippage_bps": cfg.slippage_bps,
-        "total_return": total, "buy_and_hold_return": bh,
-        "cagr": (1 + total) ** (1 / years) - 1 if years > 0 and total > -1 else None,
-        "max_drawdown": float((eq / peak - 1).min()),
-        "sharpe": float(rets.mean() / rets.std() * np.sqrt(bars_per_year)) if rets.std() > 0 else 0.0,
+        "total_return": strat["total_return"], "buy_and_hold_return": bh["total_return"],
+        "cagr": strat["cagr"], "max_drawdown": strat["max_drawdown"], "sharpe": strat["sharpe"],
+        "buy_and_hold_sharpe": bh["sharpe"], "buy_and_hold_max_drawdown": bh["max_drawdown"],
         "trades": int(len(trades)),
+        **verdict(curve, cfg.holdout_fraction, bars_per_year),
     }
     if len(trades):
         wins = trades[trades["pnl"] > 0]
@@ -172,6 +174,47 @@ def summarize(cfg: Config, trades: pd.DataFrame, curve: pd.DataFrame, fc: pd.Dat
             for label, g in fc.groupby("regime")
         }
     return {k: (round(v, 4) if isinstance(v, float) else v) for k, v in s.items()}
+
+
+def _stats(values: np.ndarray, bars_per_year: float) -> dict:
+    rets = np.diff(values) / values[:-1]
+    total = values[-1] / values[0] - 1
+    years = len(values) / bars_per_year
+    return {
+        "total_return": float(total),
+        "cagr": float((1 + total) ** (1 / years) - 1) if years > 0 and total > -1 else None,
+        "sharpe": float(rets.mean() / rets.std() * np.sqrt(bars_per_year)) if rets.std() > 0 else 0.0,
+        "max_drawdown": float((values / np.maximum.accumulate(values) - 1).min()),
+    }
+
+
+def verdict(curve: pd.DataFrame, holdout_fraction: float, bars_per_year: float) -> dict:
+    """DATA VALIDATED / TRADE-OFF / NO EDGE versus buy & hold.
+
+    The test period is split in time: an in-sample window (where you tune the
+    rules) and a held-out window at the end (judge it there, never tune on it).
+    VALIDATED  beats buy & hold on BOTH return (CAGR) and Sharpe in BOTH windows.
+    TRADE-OFF  beats it on one of the two metrics in both windows.
+    NO EDGE    anything else.
+    """
+    split = int(len(curve) * (1 - holdout_fraction))
+    windows = {"in_sample": curve.iloc[: split + 1], "held_out": curve.iloc[split:]}
+    out, beats = {}, {"cagr": True, "sharpe": True}
+    for name, w in windows.items():
+        st = _stats(w["equity"].to_numpy(), bars_per_year)
+        bh = _stats(w["close"].to_numpy(), bars_per_year)
+        out[name] = {"from": str(w["timestamps"].iloc[0]), "to": str(w["timestamps"].iloc[-1]),
+                     **{k: _r(st[k]) for k in ("cagr", "sharpe", "max_drawdown")},
+                     **{f"buy_and_hold_{k}": _r(bh[k]) for k in ("cagr", "sharpe", "max_drawdown")}}
+        for k in beats:
+            beats[k] &= st[k] is not None and bh[k] is not None and st[k] > bh[k]
+    n = sum(beats.values())
+    out["verdict"] = "DATA VALIDATED" if n == 2 else "TRADE-OFF" if n == 1 else "NO EDGE"
+    return out
+
+
+def _r(v):
+    return round(v, 4) if isinstance(v, float) else v
 
 
 def save_results(result: dict, out_dir: Path) -> None:

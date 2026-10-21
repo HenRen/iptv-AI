@@ -133,3 +133,47 @@ def test_kronos_wrapper_returns_all_paths():
     assert np.isfinite(paths.close).all()
     assert (paths.high >= paths.close).all() and (paths.low <= paths.close).all()
     assert paths.close.std(axis=0).max() > 0  # independent samples, not one averaged path
+
+
+def test_verdict_labels():
+    from kronos_trader.backtest import verdict
+
+    ts = pd.date_range("2025-01-01", periods=200, freq="h")
+    close = np.linspace(100, 110, 200) + np.sin(np.arange(200)) * 0.5
+    better = pd.DataFrame({"timestamps": ts, "close": close,
+                           "equity": 10_000 * np.exp(np.linspace(0, 0.3, 200))})
+    flat = better.assign(equity=10_000.0 + np.sin(np.arange(200)))
+    assert verdict(better, 0.3, 8760)["verdict"] == "DATA VALIDATED"
+    assert verdict(flat, 0.3, 8760)["verdict"] == "NO EDGE"
+
+
+def test_sweep_replays_cached_forecasts(tmp_path):
+    from kronos_trader.sweep import run_sweep
+
+    cfg = CFG.with_overrides(data_dir=tmp_path)
+    df = candles(500, drift=0.0004)
+    calls = []
+
+    class Counting(RandomWalkForecaster):
+        def sample(self, *a, **k):
+            calls.append(1)
+            return super().sample(*a, **k)
+
+    grid = {"trend_agreement": [0.6, 0.7], "min_win_prob": [0.5, 0.6], "min_reward_risk": [1.0]}
+    res = run_sweep(cfg, df, Counting(cfg), "t", grid)
+    assert len(res["table"]) == 4
+    decisions = len(range(cfg.lookback - 1, len(df) - 1, cfg.forecast_every))
+    assert len(calls) == decisions  # Kronos runs once per candle, not once per combination
+    if res["best"] is not None:
+        assert res["plateau"]["label"] in ("PLATEAU", "LUCKY NUMBER")
+
+
+def test_journal_roundtrip(tmp_path):
+    from kronos_trader import journal
+
+    s = {"from": "2025-01-01 00:00:00", "to": "2025-02-01 00:00:00", "trades": 3, "sharpe": 1.0,
+         "buy_and_hold_sharpe": 0.5, "verdict": "TRADE-OFF"}
+    f = tmp_path / "j.jsonl"
+    assert journal.append(f, {"symbol": "PAXGUSDT"}, s) == 1
+    assert journal.append(f, {"symbol": "PAXGUSDT"}, s, recheck_of=1) == 2
+    assert "recheck van #1" in journal.table(journal.load(f))

@@ -58,6 +58,8 @@ python -m kronos_trader forecast
 # Backtest over 1 jaar (Kronos elke 6 uur). Resumable: voorspellingen worden gecachet.
 python -m kronos_trader backtest
 python -m kronos_trader backtest --baseline     # hetzelfde met een random-walk "model" zonder AI
+python -m kronos_trader sweep                   # tientallen regelinstellingen + out-of-sample oordeel
+python -m kronos_trader journal                 # al je studies en hun oordeel
 
 # Paper trading, draait door; chart ververst in output/live_PAXGUSDT.html
 python -m kronos_trader paper
@@ -71,6 +73,40 @@ Alle drempels staan in `kronos_trader/config.py`.
 context van 512, dus zo'n 5-15 s op een M-serie Mac. Een jaarbacktest op 1h met `--every 6`
 is ±1.460 forecasts, reken op een paar uur. Draai hem 's nachts, of begin snel met
 `--every 24 --samples 30`. Door de cache kost het opnieuw draaien met andere regels niets.
+
+## Eerlijk oordeel, sweep en journal
+
+Elke backtest eindigt met één van drie vaste oordelen tegenover buy & hold. De testperiode
+wordt in de tijd gesplitst: de laatste 30% (`--holdout 0.3`) is een **held-out** periode
+waarop je nooit regels afstemt.
+
+| Oordeel | Betekenis |
+|---|---|
+| **DATA VALIDATED** | verslaat buy & hold op **zowel** CAGR **als** Sharpe, in-sample **én** held-out |
+| **TRADE-OFF** | verslaat het op één van de twee, in beide periodes. Jij beslist of dat het waard is |
+| **NO EDGE** | al het andere. Geloof het. |
+
+Anders dan veel betaalde tools rekenen wij **met** fees en slippage.
+
+```bash
+# 36 regelcombinaties (trend_agreement × min_win_prob × min_reward_risk) op één set forecasts
+python -m kronos_trader sweep
+```
+
+De sweep kiest de beste combinatie **alleen op de in-sample periode** en beoordeelt die op de
+held-out periode. Daarna kijkt hij naar de buren in het grid: een echte edge is een
+**PLATEAU** (de buren werken ook), een toevalstreffer is een **LUCKY NUMBER** (één stap
+ernaast is het weg). Kronos draait één keer per kaars, niet per combinatie, dus na de eerste
+backtest is een sweep een kwestie van seconden.
+
+Elke backtest komt in `output/journal.jsonl`:
+
+```bash
+python -m kronos_trader journal             # overzicht van alle studies met hun oordeel
+python -m kronos_trader journal --recheck   # draai elke studie opnieuw op de nieuwste data
+```
+
+Volgorde zoals een fund het doet: **vraag → backtest → oordeel → sweep → paper → pas dan echt geld.**
 
 ## Telegram-alerts
 
