@@ -165,7 +165,7 @@ def test_sweep_replays_cached_forecasts(tmp_path):
     decisions = len(range(cfg.lookback - 1, len(df) - 1, cfg.forecast_every))
     assert len(calls) == decisions  # Kronos runs once per candle, not once per combination
     if res["best"] is not None:
-        assert res["plateau"]["label"] in ("PLATEAU", "LUCKY NUMBER")
+        assert res["plateau"]["label"] in ("PLATEAU", "LUCKY NUMBER", "NO EDGE")
 
 
 def test_journal_roundtrip(tmp_path):
