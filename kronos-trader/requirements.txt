@@ -1,0 +1,10 @@
+# Kronos (vendor/Kronos) dependencies
+torch>=2.2
+einops==0.8.1
+huggingface_hub>=0.33
+safetensors>=0.6
+tqdm>=4.66
+# kronos-trader
+numpy>=1.26
+pandas>=2.2
+pytest>=8
